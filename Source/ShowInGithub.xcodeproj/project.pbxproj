@@ -1,0 +1,278 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		2FB903771482770100CA92C1 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2F3D69D71481BB2A003DE376 /* Foundation.framework */; };
+		2FB903791482771200CA92C1 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2FB903781482771200CA92C1 /* Cocoa.framework */; };
+		2FBA47E11482344500CFD04A /* SIGPlugin.m in Sources */ = {isa = PBXBuildFile; fileRef = 2FBA47DE1482344500CFD04A /* SIGPlugin.m */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		2F6E00211494FE1D00EBF639 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		2F3D69CF1481BB2A003DE376 /* 6Tools.xcplugin */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; name = 6Tools.xcplugin; path = ShowInGithub.xcplugin; sourceTree = BUILT_PRODUCTS_DIR; };
+		2F3D69D71481BB2A003DE376 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		2FB903781482771200CA92C1 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
+		2FBA47DD1482344500CFD04A /* SIGPlugin.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SIGPlugin.h; sourceTree = "<group>"; };
+		2FBA47DE1482344500CFD04A /* SIGPlugin.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SIGPlugin.m; sourceTree = "<group>"; };
+		2FBA47DF1482344500CFD04A /* SIGPluginInfo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = SIGPluginInfo.plist; sourceTree = "<group>"; };
+		2FBA47E01482344500CFD04A /* SIGPluginPrefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SIGPluginPrefix.pch; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		2F3D69CC1481BB2A003DE376 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2FB903791482771200CA92C1 /* Cocoa.framework in Frameworks */,
+				2FB903771482770100CA92C1 /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		2F3D69C41481BB2A003DE376 = {
+			isa = PBXGroup;
+			children = (
+				2FBA47DC1482344500CFD04A /* Classes */,
+				2FBA47DF1482344500CFD04A /* SIGPluginInfo.plist */,
+				2FBA47E01482344500CFD04A /* SIGPluginPrefix.pch */,
+				2F3D69D11481BB2A003DE376 /* Frameworks */,
+				2F3D69D01481BB2A003DE376 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		2F3D69D01481BB2A003DE376 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				2F3D69CF1481BB2A003DE376 /* 6Tools.xcplugin */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		2F3D69D11481BB2A003DE376 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				2FB903781482771200CA92C1 /* Cocoa.framework */,
+				2F3D69D71481BB2A003DE376 /* Foundation.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		2FBA47DC1482344500CFD04A /* Classes */ = {
+			isa = PBXGroup;
+			children = (
+				2FBA47DD1482344500CFD04A /* SIGPlugin.h */,
+				2FBA47DE1482344500CFD04A /* SIGPlugin.m */,
+			);
+			path = Classes;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		2F3D69CE1481BB2A003DE376 /* ShowInGithub */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 2F3D69E11481BB2A003DE376 /* Build configuration list for PBXNativeTarget "ShowInGithub" */;
+			buildPhases = (
+				2F3D69CB1481BB2A003DE376 /* Sources */,
+				2F3D69CC1481BB2A003DE376 /* Frameworks */,
+				2F3D69CD1481BB2A003DE376 /* Resources */,
+				2F6E00211494FE1D00EBF639 /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = ShowInGithub;
+			productName = XcodeCLIPlugin;
+			productReference = 2F3D69CF1481BB2A003DE376 /* 6Tools.xcplugin */;
+			productType = "com.apple.product-type.bundle";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		2F3D69C61481BB2A003DE376 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0420;
+				ORGANIZATIONNAME = 6Wunderkinder;
+			};
+			buildConfigurationList = 2F3D69C91481BB2A003DE376 /* Build configuration list for PBXProject "ShowInGithub" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = 2F3D69C41481BB2A003DE376;
+			productRefGroup = 2F3D69D01481BB2A003DE376 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				2F3D69CE1481BB2A003DE376 /* ShowInGithub */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		2F3D69CD1481BB2A003DE376 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		2F3D69CB1481BB2A003DE376 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2FBA47E11482344500CFD04A /* SIGPlugin.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		2F3D69DF1481BB2A003DE376 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				CLANG_ENABLE_OBJC_ARC = NO;
+				CLANG_WARN_OBJCPP_ARC_ABI = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = Libraries/XcodeFrameworks;
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				SEPARATE_STRIP = NO;
+				STRIP_INSTALLED_PRODUCT = NO;
+			};
+			name = Debug;
+		};
+		2F3D69E01481BB2A003DE376 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				CLANG_ENABLE_OBJC_ARC = NO;
+				CLANG_WARN_OBJCPP_ARC_ABI = YES;
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = Libraries/XcodeFrameworks;
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
+				SDKROOT = macosx;
+				SEPARATE_STRIP = NO;
+				STRIP_INSTALLED_PRODUCT = NO;
+			};
+			name = Release;
+		};
+		2F3D69E21481BB2A003DE376 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				DEPLOYMENT_LOCATION = YES;
+				DEPLOYMENT_POSTPROCESSING = YES;
+				DSTROOT = "$(HOME)";
+				FRAMEWORK_SEARCH_PATHS = "";
+				GCC_ENABLE_OBJC_GC = supported;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = SIGPluginPrefix.pch;
+				HEADER_SEARCH_PATHS = Libraries/XcodeFrameworks;
+				INFOPLIST_FILE = SIGPluginInfo.plist;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Application Support/Developer/Shared/Xcode/Plug-ins";
+				LD_RUNPATH_SEARCH_PATHS = /Developer;
+				LIBRARY_SEARCH_PATHS = "$(inherited)";
+				PRODUCT_NAME = ShowInGithub;
+				STRIP_INSTALLED_PRODUCT = YES;
+				WRAPPER_EXTENSION = xcplugin;
+			};
+			name = Debug;
+		};
+		2F3D69E31481BB2A003DE376 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				DEPLOYMENT_LOCATION = YES;
+				DEPLOYMENT_POSTPROCESSING = YES;
+				DSTROOT = "$(HOME)";
+				FRAMEWORK_SEARCH_PATHS = "";
+				GCC_ENABLE_OBJC_GC = supported;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = SIGPluginPrefix.pch;
+				HEADER_SEARCH_PATHS = Libraries/XcodeFrameworks;
+				INFOPLIST_FILE = SIGPluginInfo.plist;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Application Support/Developer/Shared/Xcode/Plug-ins";
+				LD_RUNPATH_SEARCH_PATHS = /Developer;
+				LIBRARY_SEARCH_PATHS = "$(inherited)";
+				PRODUCT_NAME = ShowInGithub;
+				STRIP_INSTALLED_PRODUCT = YES;
+				WRAPPER_EXTENSION = xcplugin;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		2F3D69C91481BB2A003DE376 /* Build configuration list for PBXProject "ShowInGithub" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2F3D69DF1481BB2A003DE376 /* Debug */,
+				2F3D69E01481BB2A003DE376 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		2F3D69E11481BB2A003DE376 /* Build configuration list for PBXNativeTarget "ShowInGithub" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2F3D69E21481BB2A003DE376 /* Debug */,
+				2F3D69E31481BB2A003DE376 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 2F3D69C61481BB2A003DE376 /* Project object */;
+}

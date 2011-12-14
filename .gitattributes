@@ -1,0 +1,2 @@
+# c.f. http://stackoverflow.com/questions/1549578/git-and-pbxproj
+*.pbxproj -crlf -merge
