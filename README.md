@@ -5,7 +5,7 @@ Show in GitHub was developed and tested with Xcode 4.2.1.
 
 ## Usage
 
-1. [Download Xcode Scripting Interface](https://github.com/downloads/larsxschneider/ShowInGitHub/ShowInGitHub.zip)
+1. [Download Show in GitHub](https://github.com/downloads/larsxschneider/ShowInGitHub/ShowInGitHub.zip)
 
 2. Unzip it.
 
