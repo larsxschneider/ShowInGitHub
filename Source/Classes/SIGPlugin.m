@@ -219,7 +219,7 @@ static Class IDEWorkspaceWindowControllerClass;
     NSString *githubURLComponent;    
     NSArray *args = [NSArray arrayWithObjects:@"--no-pager", @"remote", @"-v", nil];
     NSArray *remotes = [[self outputGitWithArguments:args inPath:activeDocumentDirectoryPath] componentsSeparatedByString:@"\n"];
-    NSLog(@"Remotes found: %@", remotes);
+    NSLog(@"GIT remotes: %@", remotes);
     
     for (NSString *remote in remotes)
     {
@@ -250,6 +250,7 @@ static Class IDEWorkspaceWindowControllerClass;
                                      activeDocumentFullPath,
                                      nil];
     NSString *rawLastCommitHash = [self outputGitWithArguments:args inPath:activeDocumentDirectoryPath];
+    NSLog(@"GIT blame: %@", rawLastCommitHash);
     NSArray *commitHashInfo = [rawLastCommitHash componentsSeparatedByString:@" "];
     
     if (commitHashInfo.count < 2)
@@ -260,6 +261,12 @@ static Class IDEWorkspaceWindowControllerClass;
     
     NSString *commitHash = [commitHashInfo objectAtIndex:0];
     NSString *commitLine = [commitHashInfo objectAtIndex:1];
+    
+    if ([commitHash isEqualToString:@"0000000000000000000000000000000000000000"])
+    {
+        NSRunAlertPanel(@"Error", @"Line not yet commited.", @"OK", nil, nil);
+        return;
+    }
     
     NSRange filenamePositionInBlame = [rawLastCommitHash rangeOfString:@"\nfilename"];
     if (filenamePositionInBlame.location == NSNotFound)
@@ -276,7 +283,7 @@ static Class IDEWorkspaceWindowControllerClass;
     // Get position of the file in the commit
     args = [NSArray arrayWithObjects:@"--no-pager", @"show", @"--name-only", @"--pretty=format:", commitHash, nil];
     NSString *files = [self outputGitWithArguments:args inPath:activeDocumentDirectoryPath];
-    NSLog(@"Commit files: %@", files);
+    NSLog(@"GIT show: %@", files);
     NSRange filePositionInCommit = [files rangeOfString:commitFilename];
     
     if (filePositionInCommit.location == NSNotFound)
