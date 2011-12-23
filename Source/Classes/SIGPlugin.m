@@ -148,6 +148,36 @@ static Class IDEWorkspaceWindowControllerClass;
 }
 
 
+- (NSMenu *)sixToolsMenu
+{
+    // Search if the 6Tools menu is already present in Xcode
+    NSMenuItem *sixToolsMenuItem = nil;
+    for (NSMenuItem *menuItem in [[NSApp mainMenu] itemArray])
+    {
+        if ([menuItem.title isEqualToString:@"6Tools"])
+        {
+            sixToolsMenuItem = menuItem;
+            break;
+        }
+    }
+    
+    // 6Tools menu was not found, create one.
+    if (sixToolsMenuItem == nil)
+    {
+        sixToolsMenuItem = [[NSMenuItem allocWithZone:[NSMenu menuZone]] initWithTitle:@"6Tools" 
+                                                                                action:NULL 
+                                                                         keyEquivalent:@""];
+        
+        sixToolsMenuItem.enabled = YES;
+        sixToolsMenuItem.submenu = [[[NSMenu allocWithZone:[NSMenu menuZone]] initWithTitle:sixToolsMenuItem.title] autorelease];
+        [[NSApp mainMenu] insertItem:sixToolsMenuItem atIndex:7];
+        [sixToolsMenuItem release];
+    }
+    
+    return sixToolsMenuItem.submenu;
+}
+
+
 - (void)applicationDidFinishLaunching:(NSNotification *)notification
 {
     // Application did finish launching is only send once. We do not need it anymore.
@@ -156,24 +186,23 @@ static Class IDEWorkspaceWindowControllerClass;
                   name:NSApplicationDidFinishLaunchingNotification
                 object:NSApp];
 
-    // Hook in the menu.
-    NSMenu* toolsMenu = [[NSMenu allocWithZone:[NSMenu menuZone]] initWithTitle:@"6Tools"];
-    NSMenuItem* toolsItem = [[NSMenuItem allocWithZone:[NSMenu menuZone]] initWithTitle:@"6Tools" 
-                                                                                 action:NULL 
-                                                                          keyEquivalent:@""];
-    toolsItem.enabled = YES;
-    toolsItem.submenu = toolsMenu;
     
-    NSMenuItem* openCommitItem = [[NSMenuItem allocWithZone:[NSMenu menuZone]] initWithTitle:@"Show in GitHub" 
-                                                                                      action:@selector(openCommitInGitHub:) 
+    NSMenu *sixToolsMenu = [self sixToolsMenu];
+
+    // Create action menu items
+    NSMenuItem* openCommitItem = [[NSMenuItem allocWithZone:[NSMenu menuZone]] initWithTitle:@"Open commit on GitHub" 
+                                                                                      action:@selector(openCommitOnGitHub:) 
                                                                                keyEquivalent:@""];
     openCommitItem.target = self;
-    [toolsMenu addItem:openCommitItem];
+    [sixToolsMenu addItem:openCommitItem];
     
-    [[NSApp mainMenu] insertItem:toolsItem atIndex:7];
- 
-    [toolsMenu release];
-    [toolsItem release];
+    NSMenuItem* openFileItem = [[NSMenuItem allocWithZone:[NSMenu menuZone]] initWithTitle:@"Open file on GitHub" 
+                                                                                    action:@selector(openFileOnGitHub:) 
+                                                                             keyEquivalent:@""];
+    openFileItem.target = self;
+    [sixToolsMenu addItem:openFileItem];
+    
+    [openCommitItem release];
 }
 
 
@@ -207,7 +236,7 @@ static Class IDEWorkspaceWindowControllerClass;
 }
 
 
-- (void)openCommitInGitHub:(id)sender
+- (void)openCommitOnGitHub:(id)sender
 {
     NSUInteger lineNumber = self.currentlySelectedLineNumber;
     NSURL *activeDocumentURL = [self activeDocument];
