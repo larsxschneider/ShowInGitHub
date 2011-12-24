@@ -238,18 +238,12 @@ static Class IDEWorkspaceWindowControllerClass;
 }
 
 
-- (void)openCommitOnGitHub:(id)sender
+- (NSString *)githubRepoPathForDirectory:(NSString *)dir
 {
-    NSUInteger lineNumber = self.currentlySelectedLineNumber;
-    NSURL *activeDocumentURL = [self activeDocument];
-    NSString *activeDocumentFullPath = [activeDocumentURL path];
-    NSString *activeDocumentDirectoryPath = [[activeDocumentURL URLByDeletingLastPathComponent] path];
-
-    
     // Get github username and repo name
     NSString *githubURLComponent;    
     NSArray *args = [NSArray arrayWithObjects:@"--no-pager", @"remote", @"-v", nil];
-    NSArray *remotes = [[self outputGitWithArguments:args inPath:activeDocumentDirectoryPath] componentsSeparatedByString:@"\n"];
+    NSArray *remotes = [[self outputGitWithArguments:args inPath:dir] componentsSeparatedByString:@"\n"];
     NSLog(@"GIT remotes: %@", remotes);
     
     for (NSString *remote in remotes)
@@ -267,15 +261,27 @@ static Class IDEWorkspaceWindowControllerClass;
         }
     }
     
-    if (githubURLComponent == nil)
+    return githubURLComponent;
+}
+
+
+- (void)openCommitOnGitHub:(id)sender
+{
+    NSUInteger lineNumber = self.currentlySelectedLineNumber;
+    NSURL *activeDocumentURL = [self activeDocument];
+    NSString *activeDocumentFullPath = [activeDocumentURL path];
+    NSString *activeDocumentDirectoryPath = [[activeDocumentURL URLByDeletingLastPathComponent] path];
+
+    NSString *githubRepoPath = [self githubRepoPathForDirectory:activeDocumentDirectoryPath];
+    
+    if (githubRepoPath == nil)
     {
         NSRunAlertPanel(@"Error", @"Unable to find github remote URL.", @"OK", nil, nil);
         return;
     }
     
-    
     // Get commit hash, original filename, original line
-    args = [NSArray arrayWithObjects:@"--no-pager", @"blame",
+    NSArray *args = [NSArray arrayWithObjects:@"--no-pager", @"blame",
                                      [NSString stringWithFormat:@"-L%d,%d", lineNumber, lineNumber],
                                      @"-l", @"-s", @"-n", @"-f", @"-p",
                                      activeDocumentFullPath,
@@ -329,7 +335,7 @@ static Class IDEWorkspaceWindowControllerClass;
     
     // Create GitHub URL and open browser
     NSString *commitURL = [NSString stringWithFormat:@"https://github.com/%@/commit/%@#L%dR%@",
-                           githubURLComponent,
+                           githubRepoPath,
                            commitHash,
                            fileNumber,
                            commitLine];
