@@ -68,7 +68,9 @@ static Class IDEWorkspaceWindowControllerClass;
     static SIGPlugin *plugin = nil;
     
     dispatch_once(&pred, ^{
+        NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
         plugin = [[SIGPlugin alloc] init];
+        [pool release];
     });
 }
 
