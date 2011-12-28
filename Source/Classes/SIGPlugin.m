@@ -351,4 +351,71 @@ static Class IDEWorkspaceWindowControllerClass;
 }
 
 
+- (void)openFileOnGitHub:(id)sender
+{
+    NSUInteger startLineNumber = self.selectionStartLineNumber;
+    NSUInteger endLineNumber = self.selectionEndLineNumber;
+    
+    NSURL *activeDocumentURL = [self activeDocument];
+    NSString *activeDocumentFilename = [activeDocumentURL lastPathComponent];
+    NSString *activeDocumentFullPath = [activeDocumentURL path];
+    NSString *activeDocumentDirectoryPath = [[activeDocumentURL URLByDeletingLastPathComponent] path];
+    
+    NSString *githubRepoPath = [self githubRepoPathForDirectory:activeDocumentDirectoryPath];
+    
+    if (githubRepoPath == nil)
+    {
+        NSRunAlertPanel(@"Error", @"Unable to find github remote URL.", @"OK", nil, nil);
+        return;
+    }
+    
+    // Get last commit hash
+    NSArray *args = [NSArray arrayWithObjects:@"--no-pager", @"log", @"-n1", @"--no-decorate",
+                     activeDocumentFullPath,
+                     nil];
+    NSString *rawLastCommitHash = [self outputGitWithArguments:args inPath:activeDocumentDirectoryPath];
+    NSLog(@"GIT log: %@", rawLastCommitHash);
+    NSArray *commitHashInfo = [rawLastCommitHash componentsSeparatedByCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+    
+    if (commitHashInfo.count < 2)
+    {
+        NSRunAlertPanel(@"Error", @"Unable to find filename with git log.", @"OK", nil, nil);
+        return;
+    }
+
+    NSString *commitHash = [commitHashInfo objectAtIndex:1];
+    
+    // Get file with path in the commit
+    args = [NSArray arrayWithObjects:@"--no-pager", @"show", @"--name-only", @"--pretty=format:", commitHash, nil];
+    NSString *files = [self outputGitWithArguments:args inPath:activeDocumentDirectoryPath];
+    NSLog(@"GIT show: %@", files);
+    
+    NSString *filenameWithPathInCommit = nil;
+    for (NSString *filenameWithPath in [files componentsSeparatedByCharactersInSet:[NSCharacterSet newlineCharacterSet]])
+    {
+        if ([filenameWithPath hasSuffix:activeDocumentFilename])
+        {
+            filenameWithPathInCommit = filenameWithPath;
+            break;
+        }
+    }
+    
+    if (filenameWithPathInCommit == nil)
+    {
+        NSRunAlertPanel(@"Error", @"Unable to find file in commit.", @"OK", nil, nil);
+        return;
+    }
+
+    // Create GitHub URL and open browser
+    NSString *commitURL = [NSString stringWithFormat:@"https://github.com/%@/blob/%@/%@#L%d-%d",
+                           githubRepoPath,
+                           commitHash,
+                           filenameWithPathInCommit,
+                           startLineNumber,
+                           endLineNumber];
+    
+    [NSTask launchedTaskWithLaunchPath:@"/usr/bin/open" arguments:[NSArray arrayWithObjects:commitURL, nil]];
+}
+
+
 @end
