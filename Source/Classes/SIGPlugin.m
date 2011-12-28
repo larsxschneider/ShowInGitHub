@@ -43,7 +43,8 @@ static Class IDEWorkspaceWindowControllerClass;
 @interface SIGPlugin()
 
 @property (nonatomic, strong) id ideWorkspaceWindow;
-@property (nonatomic, assign) NSUInteger currentlySelectedLineNumber;
+@property (nonatomic, assign) NSUInteger selectionStartLineNumber;
+@property (nonatomic, assign) NSUInteger selectionEndLineNumber;
 
 @end
 
@@ -54,7 +55,8 @@ static Class IDEWorkspaceWindowControllerClass;
 
 
 @synthesize ideWorkspaceWindow = _ideWorkspaceWindow;
-@synthesize currentlySelectedLineNumber = _currentlySelectedLineNumber;
+@synthesize selectionStartLineNumber = _selectionStartLineNumber;
+@synthesize selectionEndLineNumber = _selectionEndLineNumber;
 
 
 + (void)pluginDidLoad:(NSBundle *)bundle
@@ -145,8 +147,13 @@ static Class IDEWorkspaceWindowControllerClass;
 	if ([view isMemberOfClass:DVTSourceTextViewClass])
     {
         NSString *sourceTextUntilSelection = [[view string] substringWithRange:NSMakeRange(0, [view selectedRange].location)];
-        self.currentlySelectedLineNumber = [[sourceTextUntilSelection componentsSeparatedByCharactersInSet:[NSCharacterSet newlineCharacterSet]] count];
-	}
+        self.selectionStartLineNumber = [[sourceTextUntilSelection componentsSeparatedByCharactersInSet:
+                                            [NSCharacterSet newlineCharacterSet]] count];
+        
+        NSString *sourceTextSelection = [[view string] substringWithRange:[view selectedRange]];
+        NSUInteger selectedLines = [[sourceTextSelection componentsSeparatedByCharactersInSet:[NSCharacterSet newlineCharacterSet]] count];
+        self.selectionEndLineNumber = self.selectionStartLineNumber + (selectedLines > 1 ? selectedLines - 2 : 0);
+    }
 }
 
 
@@ -267,7 +274,7 @@ static Class IDEWorkspaceWindowControllerClass;
 
 - (void)openCommitOnGitHub:(id)sender
 {
-    NSUInteger lineNumber = self.currentlySelectedLineNumber;
+    NSUInteger lineNumber = self.selectionStartLineNumber;
     NSURL *activeDocumentURL = [self activeDocument];
     NSString *activeDocumentFullPath = [activeDocumentURL path];
     NSString *activeDocumentDirectoryPath = [[activeDocumentURL URLByDeletingLastPathComponent] path];
