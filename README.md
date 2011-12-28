@@ -15,7 +15,7 @@ Show in GitHub was developed and tested with Xcode 4.2.1.
 
 4. Click on any line in a GitHub project and choose "6Tools" --> "Show in GitHub" in the main menu
 
-![Screenshot](Screenshot.png)
+![Screenshot](ShowInGitHub/raw/master/Screenshot.png)
 
 ## Contact
 
