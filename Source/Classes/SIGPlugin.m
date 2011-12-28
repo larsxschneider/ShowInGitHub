@@ -134,7 +134,7 @@ static Class IDEWorkspaceWindowControllerClass;
     id window = [notification object];
     if ([window isKindOfClass:[NSWindow class]] && [window isMainWindow])
     {
-        self.ideWorkspaceWindow = [notification object];
+        self.ideWorkspaceWindow = window;
     }
 }
 
