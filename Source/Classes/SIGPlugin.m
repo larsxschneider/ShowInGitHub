@@ -410,7 +410,7 @@ static Class IDEWorkspaceWindowControllerClass;
     NSString *commitURL = [NSString stringWithFormat:@"https://github.com/%@/blob/%@/%@#L%d-%d",
                            githubRepoPath,
                            commitHash,
-                           filenameWithPathInCommit,
+                           [filenameWithPathInCommit stringByAddingPercentEscapesUsingEncoding:NSASCIIStringEncoding],
                            startLineNumber,
                            endLineNumber];
     
