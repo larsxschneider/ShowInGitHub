@@ -248,22 +248,25 @@ static Class IDEWorkspaceWindowControllerClass;
 - (NSString *)githubRepoPathForDirectory:(NSString *)dir
 {
     // Get github username and repo name
-    NSString *githubURLComponent;    
+    NSString *githubURLComponent = nil;
     NSArray *args = [NSArray arrayWithObjects:@"--no-pager", @"remote", @"-v", nil];
     NSArray *remotes = [[self outputGitWithArguments:args inPath:dir] componentsSeparatedByString:@"\n"];
     NSLog(@"GIT remotes: %@", remotes);
     
     for (NSString *remote in remotes)
     {
-        NSRange begin = [remote rangeOfString:@"git@github.com:"];
-        if (begin.location == NSNotFound) begin = [remote rangeOfString:@"https://github.com/"];
+        // TODO: Add support for https repos
+        NSRange begin = [remote rangeOfString:@"git@"];
         NSRange end = [remote rangeOfString:@".git (fetch)"];
         
-        if ((begin.location != NSNotFound) && (end.location != NSNotFound))
+        if ((begin.location != NSNotFound) &&
+            (end.location != NSNotFound))
         {
             NSUInteger githubURLBegin = begin.location + begin.length;
             NSUInteger githubURLLength = end.location - githubURLBegin;
-            githubURLComponent = [remote substringWithRange:NSMakeRange(githubURLBegin, githubURLLength)];
+            githubURLComponent = [[remote
+                                   substringWithRange:NSMakeRange(githubURLBegin, githubURLLength)]
+                                    stringByReplacingOccurrencesOfString:@":" withString:@"/"];
             break;
         }
     }
@@ -281,7 +284,7 @@ static Class IDEWorkspaceWindowControllerClass;
 
     NSString *githubRepoPath = [self githubRepoPathForDirectory:activeDocumentDirectoryPath];
     
-    if (githubRepoPath == nil)
+    if (githubRepoPath.length == 0)
     {
         NSRunAlertPanel(@"Error", @"Unable to find github remote URL.", @"OK", nil, nil);
         return;
@@ -341,7 +344,7 @@ static Class IDEWorkspaceWindowControllerClass;
     
     
     // Create GitHub URL and open browser
-    NSString *commitURL = [NSString stringWithFormat:@"https://github.com/%@/commit/%@#L%dR%@",
+    NSString *commitURL = [NSString stringWithFormat:@"https://%@/commit/%@#L%dR%@",
                            githubRepoPath,
                            commitHash,
                            fileNumber,
@@ -363,7 +366,7 @@ static Class IDEWorkspaceWindowControllerClass;
     
     NSString *githubRepoPath = [self githubRepoPathForDirectory:activeDocumentDirectoryPath];
     
-    if (githubRepoPath == nil)
+    if (githubRepoPath.length == 0)
     {
         NSRunAlertPanel(@"Error", @"Unable to find github remote URL.", @"OK", nil, nil);
         return;
@@ -407,7 +410,7 @@ static Class IDEWorkspaceWindowControllerClass;
     }
 
     // Create GitHub URL and open browser
-    NSString *commitURL = [NSString stringWithFormat:@"https://github.com/%@/blob/%@/%@#L%d-%d",
+    NSString *commitURL = [NSString stringWithFormat:@"https://%@/blob/%@/%@#L%d-%d",
                            githubRepoPath,
                            commitHash,
                            [filenameWithPathInCommit stringByAddingPercentEscapesUsingEncoding:NSASCIIStringEncoding],
