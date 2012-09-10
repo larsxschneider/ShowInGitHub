@@ -25,7 +25,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		2F3D69CF1481BB2A003DE376 /* 6Tools.xcplugin */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; name = 6Tools.xcplugin; path = ShowInGithub.xcplugin; sourceTree = BUILT_PRODUCTS_DIR; };
+		2F3D69CF1481BB2A003DE376 /* ShowInGithub.xcplugin */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ShowInGithub.xcplugin; sourceTree = BUILT_PRODUCTS_DIR; };
 		2F3D69D71481BB2A003DE376 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		2FB903781482771200CA92C1 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
 		2FBA47DD1482344500CFD04A /* SIGPlugin.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SIGPlugin.h; sourceTree = "<group>"; };
@@ -61,7 +61,7 @@
 		2F3D69D01481BB2A003DE376 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				2F3D69CF1481BB2A003DE376 /* 6Tools.xcplugin */,
+				2F3D69CF1481BB2A003DE376 /* ShowInGithub.xcplugin */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -102,7 +102,7 @@
 			);
 			name = ShowInGithub;
 			productName = XcodeCLIPlugin;
-			productReference = 2F3D69CF1481BB2A003DE376 /* 6Tools.xcplugin */;
+			productReference = 2F3D69CF1481BB2A003DE376 /* ShowInGithub.xcplugin */;
 			productType = "com.apple.product-type.bundle";
 		};
 /* End PBXNativeTarget section */
@@ -111,7 +111,7 @@
 		2F3D69C61481BB2A003DE376 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0420;
+				LastUpgradeCheck = 0440;
 				ORGANIZATIONNAME = 6Wunderkinder;
 			};
 			buildConfigurationList = 2F3D69C91481BB2A003DE376 /* Build configuration list for PBXProject "ShowInGithub" */;
@@ -212,6 +212,7 @@
 		2F3D69E21481BB2A003DE376 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
 				DEPLOYMENT_LOCATION = YES;
 				DEPLOYMENT_POSTPROCESSING = YES;
 				DSTROOT = "$(HOME)";
@@ -233,6 +234,7 @@
 		2F3D69E31481BB2A003DE376 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
 				DEPLOYMENT_LOCATION = YES;
 				DEPLOYMENT_POSTPROCESSING = YES;
 				DSTROOT = "$(HOME)";
