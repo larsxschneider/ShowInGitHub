@@ -254,9 +254,16 @@ static Class IDEWorkspaceWindowControllerClass;
     NSLog(@"GIT remotes: %@", remotes);
     
     for (NSString *remote in remotes)
-    {
-        // TODO: Add support for https repos
+    {       
+        // Check for SSH protocol
         NSRange begin = [remote rangeOfString:@"git@"];
+
+        if (begin.location == NSNotFound)
+        {
+            // SSH protocol not found, check for HTTP protocol
+            begin = [remote rangeOfString:@"git://"];
+        }
+
         NSRange end = [remote rangeOfString:@".git (fetch)"];
         
         if ((begin.location != NSNotFound) &&
