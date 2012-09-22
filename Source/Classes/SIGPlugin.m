@@ -252,6 +252,8 @@ static Class IDEWorkspaceWindowControllerClass;
     NSArray *args = [NSArray arrayWithObjects:@"--no-pager", @"remote", @"-v", nil];
     NSArray *remotes = [[self outputGitWithArguments:args inPath:dir] componentsSeparatedByString:@"\n"];
     NSLog(@"GIT remotes: %@", remotes);
+
+    NSMutableSet *remotePaths = [NSMutableSet setWithCapacity:1];
     
     for (NSString *remote in remotes)
     {       
@@ -274,8 +276,26 @@ static Class IDEWorkspaceWindowControllerClass;
             githubURLComponent = [[remote
                                    substringWithRange:NSMakeRange(githubURLBegin, githubURLLength)]
                                     stringByReplacingOccurrencesOfString:@":" withString:@"/"];
-            break;
+
+            [remotePaths addObject:githubURLComponent];
         }
+    }
+
+    if (remotePaths.count > 1)
+    {
+        NSArray *sortedRemotePaths = remotePaths.allObjects;
+
+        // Ask the user what remote to use.
+        // Attention: Due to NSRunAlertPanel maximal three remotes are supported.
+        NSInteger result = NSRunAlertPanel(@"Question",
+                        [NSString stringWithFormat:@"This repository has %li remotes configured. Which one do you want to open?", remotePaths.count],
+                        [sortedRemotePaths objectAtIndex:0],
+                        [sortedRemotePaths objectAtIndex:1],
+                        (sortedRemotePaths.count > 2 ? [sortedRemotePaths objectAtIndex:2] : nil));
+
+        if (result == 1) githubURLComponent = [sortedRemotePaths objectAtIndex:0];
+        else if (result == 0) githubURLComponent = [sortedRemotePaths objectAtIndex:1];
+        else if (sortedRemotePaths.count > 2) githubURLComponent = [sortedRemotePaths objectAtIndex:2];
     }
     
     return githubURLComponent;
