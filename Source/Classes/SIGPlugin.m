@@ -163,7 +163,7 @@ static Class IDEWorkspaceWindowControllerClass;
     NSMenuItem *sixToolsMenuItem = nil;
     for (NSMenuItem *menuItem in [[NSApp mainMenu] itemArray])
     {
-        if ([menuItem.title isEqualToString:@"6Tools"])
+        if ([menuItem.title isEqualToString:@"GitHub"])
         {
             sixToolsMenuItem = menuItem;
             break;
@@ -173,7 +173,7 @@ static Class IDEWorkspaceWindowControllerClass;
     // 6Tools menu was not found, create one.
     if (sixToolsMenuItem == nil)
     {
-        sixToolsMenuItem = [[NSMenuItem allocWithZone:[NSMenu menuZone]] initWithTitle:@"6Tools" 
+        sixToolsMenuItem = [[NSMenuItem allocWithZone:[NSMenu menuZone]] initWithTitle:@"GitHub" 
                                                                                 action:NULL 
                                                                          keyEquivalent:@""];
         
