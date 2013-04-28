@@ -19,7 +19,7 @@ Show in GitHub was developed and tested with Xcode 4.5.
 
 3. Restart Xcode
 
-4. Click on any line in a GitHub project and choose "6Tools" --> "Show in GitHub" in the main menu
+4. Click on any line in a GitHub project and choose "GitHub" --> "Show in GitHub" in the main menu
 
 
 ## Contact
