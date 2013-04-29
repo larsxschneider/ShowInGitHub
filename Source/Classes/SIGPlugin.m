@@ -265,6 +265,11 @@ static Class IDEWorkspaceWindowControllerClass;
             // SSH protocol not found, check for HTTP protocol
             begin = [remote rangeOfString:@"git://"];
         }
+        if (begin.location == NSNotFound)
+        {
+            // HTTPS protocol check
+            begin = [remote rangeOfString:@"https://"];
+        }
 
         NSRange end = [remote rangeOfString:@".git (fetch)"];
         
