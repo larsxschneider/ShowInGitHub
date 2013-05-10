@@ -11,6 +11,10 @@ Show in GitHub was developed and tested with Xcode 4.5.
 
 ## Usage
 
+0. Install it via [Alcatraz](http://mneorr.github.io/Alcatraz/)
+
+or
+
 1. [Download "Show in GitHub"](https://github.com/downloads/larsxschneider/ShowInGitHub/ShowInGitHub.zip)
 
 2. Unzip it.
