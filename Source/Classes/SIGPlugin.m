@@ -72,7 +72,7 @@ static Class IDEWorkspaceWindowControllerClass;
     dispatch_once(&pred, ^{
         NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
         plugin = [[SIGPlugin alloc] init];
-        [pool release];
+        [pool drain];
     });
 }
 
@@ -324,7 +324,7 @@ static Class IDEWorkspaceWindowControllerClass;
     
     // Get commit hash, original filename, original line
     NSArray *args = [NSArray arrayWithObjects:@"--no-pager", @"blame",
-                                     [NSString stringWithFormat:@"-L%d,%d", lineNumber, lineNumber],
+                                     [NSString stringWithFormat:@"-L%lu,%lu", (unsigned long)lineNumber, (unsigned long)lineNumber],
                                      @"-l", @"-s", @"-n", @"-f", @"-p",
                                      activeDocumentFullPath,
                                      nil];
@@ -376,10 +376,10 @@ static Class IDEWorkspaceWindowControllerClass;
     
     
     // Create GitHub URL and open browser
-    NSString *commitURL = [NSString stringWithFormat:@"https://%@/commit/%@#L%dR%@",
+    NSString *commitURL = [NSString stringWithFormat:@"https://%@/commit/%@#L%luR%@",
                            githubRepoPath,
                            commitHash,
-                           fileNumber,
+                           (unsigned long)fileNumber,
                            commitLine];
     
     [NSTask launchedTaskWithLaunchPath:@"/usr/bin/open" arguments:[NSArray arrayWithObjects:commitURL, nil]];
@@ -442,12 +442,12 @@ static Class IDEWorkspaceWindowControllerClass;
     }
 
     // Create GitHub URL and open browser
-    NSString *commitURL = [NSString stringWithFormat:@"https://%@/blob/%@/%@#L%d-%d",
+    NSString *commitURL = [NSString stringWithFormat:@"https://%@/blob/%@/%@#L%lu-%lu",
                            githubRepoPath,
                            commitHash,
                            [filenameWithPathInCommit stringByAddingPercentEscapesUsingEncoding:NSASCIIStringEncoding],
-                           startLineNumber,
-                           endLineNumber];
+                           (unsigned long)startLineNumber,
+                           (unsigned long)endLineNumber];
     
     [NSTask launchedTaskWithLaunchPath:@"/usr/bin/open" arguments:[NSArray arrayWithObjects:commitURL, nil]];
 }
