@@ -116,9 +116,10 @@ static Class IDEWorkspaceWindowControllerClass;
 // ------------------------------------------------------------------------------------------
 - (NSURL *)activeDocument
 {
-    for (id workspaceWindowController in [IDEWorkspaceWindowControllerClass workspaceWindowControllers])
+    NSArray *windows = [IDEWorkspaceWindowControllerClass workspaceWindowControllers];
+    for (id workspaceWindowController in windows)
     {
-        if ([workspaceWindowController workspaceWindow] == self.ideWorkspaceWindow)
+        if ([workspaceWindowController workspaceWindow] == self.ideWorkspaceWindow || windows.count == 1)
         {
             return [[[workspaceWindowController editorArea] primaryEditorDocument] fileURL];
         }
