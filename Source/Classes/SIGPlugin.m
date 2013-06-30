@@ -222,6 +222,12 @@ static Class IDEWorkspaceWindowControllerClass;
 // Performs a git command with given args in the given directory
 - (NSString *)outputGitWithArguments:(NSArray *)args inPath:(NSString *)path
 {
+    if (path.length == 0)
+    {
+        NSLog(@"Invalid path for git working directory.");
+        return nil;
+    }
+    
     NSTask *task = [[NSTask alloc] init];
     task.launchPath = @"/usr/bin/git";
     task.currentDirectoryPath = path;
@@ -248,6 +254,12 @@ static Class IDEWorkspaceWindowControllerClass;
 
 - (NSString *)githubRepoPathForDirectory:(NSString *)dir
 {
+    if (dir.length == 0)
+    {
+        NSLog(@"Invalid git repository path.");
+        return nil;
+    }
+
     // Get github username and repo name
     NSString *githubURLComponent = nil;
     NSArray *args = [NSArray arrayWithObjects:@"--no-pager", @"remote", @"-v", nil];
@@ -312,6 +324,13 @@ static Class IDEWorkspaceWindowControllerClass;
 {
     NSUInteger lineNumber = self.selectionStartLineNumber;
     NSURL *activeDocumentURL = [self activeDocument];
+
+    if (!activeDocumentURL)
+    {
+        NSRunAlertPanel(@"Error", @"Unable to find Xcode document. Xcode version compatible to ShowInGithub?", @"OK", nil, nil);
+        return;
+    }
+
     NSString *activeDocumentFullPath = [activeDocumentURL path];
     NSString *activeDocumentDirectoryPath = [[activeDocumentURL URLByDeletingLastPathComponent] path];
 
