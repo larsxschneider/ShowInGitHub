@@ -15,11 +15,11 @@ Show in GitHub was developed and tested with Xcode 4.5.
 
 or
 
-1. [Download "Show in GitHub"](https://github.com/downloads/larsxschneider/ShowInGitHub/ShowInGitHub.zip)
+1. Clone the repo on your local machine.
 
-2. Unzip it.
+2. Build it.
 
-3. Move `ShowInGitHub.xcplugin` to `~/Library/Application Support/Developer/Shared/Xcode/Plug-ins/ShowInGitHub.xcplugin
+3. `ShowInGitHub.xcplugin` should appear in `~/Library/Application Support/Developer/Shared/Xcode/Plug-ins
 
 3. Restart Xcode
 
