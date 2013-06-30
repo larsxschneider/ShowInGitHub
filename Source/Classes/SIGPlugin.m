@@ -344,7 +344,7 @@ static Class IDEWorkspaceWindowControllerClass;
     
     // Get commit hash, original filename, original line
     NSArray *args = [NSArray arrayWithObjects:@"--no-pager", @"blame",
-                                     [NSString stringWithFormat:@"-L%d,%d", lineNumber, lineNumber],
+                                     [NSString stringWithFormat:@"-L%ld,%ld", (unsigned long)lineNumber, (unsigned long)lineNumber],
                                      @"-l", @"-s", @"-n", @"-f", @"-p",
                                      activeDocumentFullPath,
                                      nil];
@@ -396,10 +396,10 @@ static Class IDEWorkspaceWindowControllerClass;
     
     
     // Create GitHub URL and open browser
-    NSString *commitURL = [NSString stringWithFormat:@"https://%@/commit/%@#L%dR%@",
+    NSString *commitURL = [NSString stringWithFormat:@"https://%@/commit/%@#L%ldR%@",
                            githubRepoPath,
                            commitHash,
-                           fileNumber,
+                           (unsigned long)fileNumber,
                            commitLine];
     
     [NSTask launchedTaskWithLaunchPath:@"/usr/bin/open" arguments:[NSArray arrayWithObjects:commitURL, nil]];
@@ -462,12 +462,12 @@ static Class IDEWorkspaceWindowControllerClass;
     }
 
     // Create GitHub URL and open browser
-    NSString *commitURL = [NSString stringWithFormat:@"https://%@/blob/%@/%@#L%d-%d",
+    NSString *commitURL = [NSString stringWithFormat:@"https://%@/blob/%@/%@#L%ld-%ld",
                            githubRepoPath,
                            commitHash,
                            [filenameWithPathInCommit stringByAddingPercentEscapesUsingEncoding:NSASCIIStringEncoding],
-                           startLineNumber,
-                           endLineNumber];
+                           (unsigned long)startLineNumber,
+                           (unsigned long)endLineNumber];
     
     [NSTask launchedTaskWithLaunchPath:@"/usr/bin/open" arguments:[NSArray arrayWithObjects:commitURL, nil]];
 }
