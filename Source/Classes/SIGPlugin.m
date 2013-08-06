@@ -283,9 +283,20 @@ static Class IDEWorkspaceWindowControllerClass;
             // HTTPS protocol check
             begin = [remote rangeOfString:@"https://"];
         }
+        if (begin.location == NSNotFound)
+        {
+            // Alternate HTTP protocol
+            begin = [remote rangeOfString:@"http://"];
+        }
 
         NSRange end = [remote rangeOfString:@".git (fetch)"];
-        
+
+        if (end.location == NSNotFound)
+        {
+            // Alternate remote url end
+            end = [remote rangeOfString:@" (fetch)"];
+        }
+
         if ((begin.location != NSNotFound) &&
             (end.location != NSNotFound))
         {
@@ -396,7 +407,7 @@ static Class IDEWorkspaceWindowControllerClass;
     
     
     // Create GitHub URL and open browser
-    NSString *commitURL = [NSString stringWithFormat:@"https://%@/commit/%@#L%ldR%@",
+    NSString *commitURL = [NSString stringWithFormat:@"http://%@/commit/%@#L%ldR%@",
                            githubRepoPath,
                            commitHash,
                            (unsigned long)fileNumber,
@@ -462,7 +473,7 @@ static Class IDEWorkspaceWindowControllerClass;
     }
 
     // Create GitHub URL and open browser
-    NSString *commitURL = [NSString stringWithFormat:@"https://%@/blob/%@/%@#L%ld-%ld",
+    NSString *commitURL = [NSString stringWithFormat:@"http://%@/blob/%@/%@#L%ld-%ld",
                            githubRepoPath,
                            commitHash,
                            [filenameWithPathInCommit stringByAddingPercentEscapesUsingEncoding:NSASCIIStringEncoding],
