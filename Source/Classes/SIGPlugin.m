@@ -283,9 +283,20 @@ static Class IDEWorkspaceWindowControllerClass;
             // HTTPS protocol check
             begin = [remote rangeOfString:@"https://"];
         }
+        if (begin.location == NSNotFound)
+        {
+            // Alternate HTTP protocol
+            begin = [remote rangeOfString:@"http://"];
+        }
 
         NSRange end = [remote rangeOfString:@".git (fetch)"];
-        
+
+        if (end.location == NSNotFound)
+        {
+            // Alternate remote url end
+            end = [remote rangeOfString:@" (fetch)"];
+        }
+
         if ((begin.location != NSNotFound) &&
             (end.location != NSNotFound))
         {
@@ -319,6 +330,25 @@ static Class IDEWorkspaceWindowControllerClass;
     return githubURLComponent;
 }
 
+- (BOOL)canOpenURL:(NSString *)urlString
+{
+    NSMutableURLRequest *request = [[NSMutableURLRequest alloc] initWithURL:[NSURL URLWithString:urlString]];
+    request.HTTPMethod = @"HEAD";
+
+    NSURLResponse *response;
+    NSError *error;
+
+    [NSURLConnection sendSynchronousRequest:request returningResponse:&response error:&error];
+
+    if (!error && [response isKindOfClass:NSHTTPURLResponse.class])
+    {
+        NSHTTPURLResponse *httpResonse = (NSHTTPURLResponse *)response;
+
+        return httpResonse.statusCode >= 200 && httpResonse.statusCode < 400;
+    }
+
+    return NO;
+}
 
 - (void)openCommitOnGitHub:(id)sender
 {
@@ -401,7 +431,12 @@ static Class IDEWorkspaceWindowControllerClass;
                            commitHash,
                            (unsigned long)fileNumber,
                            commitLine];
-    
+
+    if (![self canOpenURL:commitURL])
+    {
+        commitURL = [commitURL stringByReplacingOccurrencesOfString:@"https" withString:@"http"];
+    }
+
     [NSTask launchedTaskWithLaunchPath:@"/usr/bin/open" arguments:[NSArray arrayWithObjects:commitURL, nil]];
 }
 
@@ -468,7 +503,12 @@ static Class IDEWorkspaceWindowControllerClass;
                            [filenameWithPathInCommit stringByAddingPercentEscapesUsingEncoding:NSASCIIStringEncoding],
                            (unsigned long)startLineNumber,
                            (unsigned long)endLineNumber];
-    
+
+    if (![self canOpenURL:commitURL])
+    {
+        commitURL = [commitURL stringByReplacingOccurrencesOfString:@"https" withString:@"http"];
+    }
+
     [NSTask launchedTaskWithLaunchPath:@"/usr/bin/open" arguments:[NSArray arrayWithObjects:commitURL, nil]];
 }
 
