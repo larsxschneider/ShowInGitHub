@@ -45,6 +45,7 @@ static Class IDEWorkspaceWindowControllerClass;
 @property (nonatomic, strong) id ideWorkspaceWindow;
 @property (nonatomic, assign) NSUInteger selectionStartLineNumber;
 @property (nonatomic, assign) NSUInteger selectionEndLineNumber;
+@property (nonatomic, assign) BOOL useHTTPS;
 
 @end
 
@@ -426,18 +427,12 @@ static Class IDEWorkspaceWindowControllerClass;
     
     
     // Create GitHub URL and open browser
-    NSString *commitURL = [NSString stringWithFormat:@"https://%@/commit/%@#L%ldR%@",
-                           githubRepoPath,
+    NSString *path = [NSString stringWithFormat:@"/commit/%@#L%ldR%@",
                            commitHash,
                            (unsigned long)fileNumber,
                            commitLine];
 
-    if (![self canOpenURL:commitURL])
-    {
-        commitURL = [commitURL stringByReplacingOccurrencesOfString:@"https" withString:@"http"];
-    }
-
-    [NSTask launchedTaskWithLaunchPath:@"/usr/bin/open" arguments:[NSArray arrayWithObjects:commitURL, nil]];
+    [self openRepo:githubRepoPath withPath:path];
 }
 
 
@@ -497,20 +492,36 @@ static Class IDEWorkspaceWindowControllerClass;
     }
 
     // Create GitHub URL and open browser
-    NSString *commitURL = [NSString stringWithFormat:@"https://%@/blob/%@/%@#L%ld-%ld",
-                           githubRepoPath,
+    NSString *path = [NSString stringWithFormat:@"/blob/%@/%@#L%ld-%ld",
                            commitHash,
                            [filenameWithPathInCommit stringByAddingPercentEscapesUsingEncoding:NSASCIIStringEncoding],
                            (unsigned long)startLineNumber,
                            (unsigned long)endLineNumber];
 
-    if (![self canOpenURL:commitURL])
-    {
-        commitURL = [commitURL stringByReplacingOccurrencesOfString:@"https" withString:@"http"];
-    }
-
-    [NSTask launchedTaskWithLaunchPath:@"/usr/bin/open" arguments:[NSArray arrayWithObjects:commitURL, nil]];
+    [self openRepo:githubRepoPath withPath:path];
 }
 
+
+- (void)openRepo:(NSString *)repo withPath:(NSString *)path
+{
+    NSString *secureBaseUrl = [NSString stringWithFormat:@"https://%@", repo];
+
+    // Check if HTTPS is available. Default to HTTPS without checking again if it is available at least once.
+    if (!self.useHTTPS)
+    {
+        if ([self canOpenURL:secureBaseUrl])
+        {
+            self.useHTTPS = YES;
+        }
+    }
+
+    NSString *url = [NSString stringWithFormat:@"%@%@", secureBaseUrl, path];
+    if (!self.useHTTPS)
+    {
+        url = [NSString stringWithFormat:@"http://%@%@", repo, path];
+    }
+
+    [NSTask launchedTaskWithLaunchPath:@"/usr/bin/open" arguments:[NSArray arrayWithObjects:url, nil]];
+}
 
 @end
