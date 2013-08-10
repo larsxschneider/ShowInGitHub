@@ -330,6 +330,7 @@ static Class IDEWorkspaceWindowControllerClass;
     return githubURLComponent;
 }
 
+
 - (BOOL)canOpenURL:(NSString *)urlString
 {
     NSMutableURLRequest *request = [[NSMutableURLRequest alloc] initWithURL:[NSURL URLWithString:urlString]];
@@ -337,18 +338,17 @@ static Class IDEWorkspaceWindowControllerClass;
 
     NSURLResponse *response;
     NSError *error;
+    NSData* data = [NSURLConnection sendSynchronousRequest:request returningResponse:&response error:&error];
 
-    [NSURLConnection sendSynchronousRequest:request returningResponse:&response error:&error];
-
-    if (!error && [response isKindOfClass:NSHTTPURLResponse.class])
+    if (data && [response isKindOfClass:NSHTTPURLResponse.class])
     {
-        NSHTTPURLResponse *httpResonse = (NSHTTPURLResponse *)response;
-
-        return httpResonse.statusCode >= 200 && httpResonse.statusCode < 400;
+        NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
+        return httpResponse.statusCode >= 200 && httpResponse.statusCode < 400;
     }
 
     return NO;
 }
+
 
 - (void)openCommitOnGitHub:(id)sender
 {
