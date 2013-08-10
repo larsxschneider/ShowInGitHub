@@ -275,7 +275,7 @@ static Class IDEWorkspaceWindowControllerClass;
 
         if (begin.location == NSNotFound)
         {
-            // SSH protocol not found, check for HTTP protocol
+            // SSH protocol not found, check for GIT protocol
             begin = [remote rangeOfString:@"git://"];
         }
         if (begin.location == NSNotFound)
@@ -285,7 +285,7 @@ static Class IDEWorkspaceWindowControllerClass;
         }
         if (begin.location == NSNotFound)
         {
-            // Alternate HTTP protocol
+            // HTTP protocol check
             begin = [remote rangeOfString:@"http://"];
         }
 
