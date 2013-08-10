@@ -1,5 +1,7 @@
 # Show in GitHub
-Xcode plugin to open a related Github page directly form the Xcode editor code window. Click [here](http://www.youtube.com/watch?v=dWRjkYk8A6s) for a tutorial.
+Xcode plugin to open a related Github page directly form the Xcode editor code window.
+
+Click [here](https://www.youtube.com/watch?v=dWRjkYk8A6s) for a tutorial. In addition I presented the tool on [Git Merge 2013 in Berlin](https://www.youtube.com/watch?v=nmSFRKfFMak).
 
 
 * [Open a Github page with the commit of the current Xcode editor line to make a comment on Github](https://github.com/larsxschneider/ShowInGitHub/commit/2149a9b4944770c2f1430761cc13abee6fa8bbe5#L0R190) ![Screenshot](https://raw.github.com/larsxschneider/ShowInGitHub/master/open_commit_example.png))
