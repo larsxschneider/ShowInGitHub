@@ -73,7 +73,7 @@ static Class IDEWorkspaceWindowControllerClass;
     dispatch_once(&pred, ^{
         NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
         plugin = [[SIGPlugin alloc] init];
-        [pool release];
+        [pool drain];
     });
 }
 
@@ -214,6 +214,7 @@ static Class IDEWorkspaceWindowControllerClass;
     [sixToolsMenu addItem:openFileItem];
     
     [openCommitItem release];
+    [openFileItem release];
 }
 
 
@@ -341,6 +342,8 @@ static Class IDEWorkspaceWindowControllerClass;
     NSError *error;
     NSData* data = [NSURLConnection sendSynchronousRequest:request returningResponse:&response error:&error];
 
+    [request release];
+
     if (data && [response isKindOfClass:NSHTTPURLResponse.class])
     {
         NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
@@ -424,13 +427,25 @@ static Class IDEWorkspaceWindowControllerClass;
     
     NSString *filesUntilFilename = [files substringToIndex:filePositionInCommit.location];
     NSUInteger fileNumber = [[filesUntilFilename componentsSeparatedByCharactersInSet:[NSCharacterSet newlineCharacterSet]] count] - 2;
-    
-    
-    // Create GitHub URL and open browser
-    NSString *path = [NSString stringWithFormat:@"/commit/%@#L%ldR%@",
-                           commitHash,
-                           (unsigned long)fileNumber,
-                           commitLine];
+
+    NSString *path = nil;
+
+    if ( [self isGithubRepo:githubRepoPath] == YES ) {
+
+        // Create GitHub URL and open browser
+        path = [NSString stringWithFormat:@"/commit/%@#L%ldR%@",
+                commitHash,
+                (unsigned long)fileNumber,
+                commitLine];
+
+    } else {
+
+        path = [NSString stringWithFormat:@"/commits/%@#L%ldR%@",
+                commitHash,
+                (unsigned long)fileNumber,
+                commitLine];
+
+    }
 
     [self openRepo:githubRepoPath withPath:path];
 }
@@ -491,16 +506,41 @@ static Class IDEWorkspaceWindowControllerClass;
         return;
     }
 
-    // Create GitHub URL and open browser
-    NSString *path = [NSString stringWithFormat:@"/blob/%@/%@#L%ld-%ld",
-                           commitHash,
-                           [filenameWithPathInCommit stringByAddingPercentEscapesUsingEncoding:NSASCIIStringEncoding],
-                           (unsigned long)startLineNumber,
-                           (unsigned long)endLineNumber];
+    NSString *path = nil;
+
+    if ( [self isGithubRepo:githubRepoPath] == YES ) {
+
+        // Create GitHub URL and open browser
+        path = [NSString stringWithFormat:@"/blob/%@/%@#L%ld-%ld",
+                commitHash,
+                [filenameWithPathInCommit stringByAddingPercentEscapesUsingEncoding:NSASCIIStringEncoding],
+                (unsigned long)startLineNumber,
+                (unsigned long)endLineNumber];
+
+    } else {
+
+        path = [NSString stringWithFormat:@"/src/%@/%@#L%ld-%ld",
+                commitHash,
+                [filenameWithPathInCommit stringByAddingPercentEscapesUsingEncoding:NSASCIIStringEncoding],
+                (unsigned long)startLineNumber,
+                (unsigned long)endLineNumber];
+
+    }
 
     [self openRepo:githubRepoPath withPath:path];
 }
 
+- (BOOL) isGithubRepo:(NSString*)repo
+{
+    NSRange r = [[repo lowercaseString] rangeOfString:@"github.com"];
+
+    if (r.location == NSNotFound) {
+
+        return NO;
+    }
+
+    return YES;
+}
 
 - (void)openRepo:(NSString *)repo withPath:(NSString *)path
 {
