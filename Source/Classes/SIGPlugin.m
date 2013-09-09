@@ -73,7 +73,7 @@ static Class IDEWorkspaceWindowControllerClass;
     dispatch_once(&pred, ^{
         NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
         plugin = [[SIGPlugin alloc] init];
-        [pool release];
+        [pool drain];
     });
 }
 
@@ -214,6 +214,7 @@ static Class IDEWorkspaceWindowControllerClass;
     [sixToolsMenu addItem:openFileItem];
     
     [openCommitItem release];
+    [openFileItem release];
 }
 
 
@@ -341,6 +342,8 @@ static Class IDEWorkspaceWindowControllerClass;
     NSError *error;
     NSData* data = [NSURLConnection sendSynchronousRequest:request returningResponse:&response error:&error];
 
+    [request release];
+
     if (data && [response isKindOfClass:NSHTTPURLResponse.class])
     {
         NSHTTPURLResponse *httpResponse = (NSHTTPURLResponse *)response;
@@ -424,15 +427,30 @@ static Class IDEWorkspaceWindowControllerClass;
     
     NSString *filesUntilFilename = [files substringToIndex:filePositionInCommit.location];
     NSUInteger fileNumber = [[filesUntilFilename componentsSeparatedByCharactersInSet:[NSCharacterSet newlineCharacterSet]] count] - 2;
-    
-    
-    // Create GitHub URL and open browser
-    NSString *path = [NSString stringWithFormat:@"/commit/%@#L%ldR%@",
-                           commitHash,
-                           (unsigned long)fileNumber,
-                           commitLine];
 
-    [self openRepo:githubRepoPath withPath:path];
+    NSString *path = nil;
+
+    if ( [self isGithubRepo:githubRepoPath] == YES ) {
+
+        // Create GitHub URL and open browser
+        path = [NSString stringWithFormat:@"/commit/%@#L%ldR%@",
+                commitHash,
+                (unsigned long)fileNumber,
+                commitLine];
+
+    } else if ( [self isBitBucketRepo:githubRepoPath] == YES ) {
+
+        path = [NSString stringWithFormat:@"/commits/%@#L%ldR%@",
+                commitHash,
+                (unsigned long)fileNumber,
+                commitLine];
+
+    }
+
+    if (path != nil) {
+
+        [self openRepo:githubRepoPath withPath:path];
+    }
 }
 
 
@@ -491,16 +509,67 @@ static Class IDEWorkspaceWindowControllerClass;
         return;
     }
 
-    // Create GitHub URL and open browser
-    NSString *path = [NSString stringWithFormat:@"/blob/%@/%@#L%ld-%ld",
-                           commitHash,
-                           [filenameWithPathInCommit stringByAddingPercentEscapesUsingEncoding:NSASCIIStringEncoding],
-                           (unsigned long)startLineNumber,
-                           (unsigned long)endLineNumber];
+    NSString *path = nil;
 
-    [self openRepo:githubRepoPath withPath:path];
+    if ( [self isGithubRepo:githubRepoPath] == YES ) {
+
+        // Create GitHub URL and open browser
+        path = [NSString stringWithFormat:@"/blob/%@/%@#L%ld-%ld",
+                commitHash,
+                [filenameWithPathInCommit stringByAddingPercentEscapesUsingEncoding:NSASCIIStringEncoding],
+                (unsigned long)startLineNumber,
+                (unsigned long)endLineNumber];
+
+    } else if ( [self isBitBucketRepo:githubRepoPath] == YES ) {
+
+        path = [NSString stringWithFormat:@"/src/%@/%@#L%ld-%ld",
+                commitHash,
+                [filenameWithPathInCommit stringByAddingPercentEscapesUsingEncoding:NSASCIIStringEncoding],
+                (unsigned long)startLineNumber,
+                (unsigned long)endLineNumber];
+
+    }
+
+    if (path != nil) {
+
+        [self openRepo:githubRepoPath withPath:path];
+    }
+  
 }
 
+- (BOOL) isGithubRepo:(NSString *)repo
+{
+    NSArray *servers = @[@"github.com", @"github.org"];
+
+    for (NSString *s in servers) {
+
+        NSRange r = [[repo lowercaseString] rangeOfString:s];
+
+        if (r.location != NSNotFound) {
+
+            return YES;
+        }
+    }
+
+    return NO;
+}
+
+- (BOOL) isBitBucketRepo:(NSString *)repo
+{
+    NSArray *servers = @[@"bitbucket.com", @"bitbucket.org"];
+
+    for (NSString *s in servers) {
+
+        NSRange r = [[repo lowercaseString] rangeOfString:s];
+
+        if (r.location != NSNotFound) {
+
+            return YES;
+        }
+    }
+
+    return NO;
+}
 
 - (void)openRepo:(NSString *)repo withPath:(NSString *)path
 {
