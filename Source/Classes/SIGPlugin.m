@@ -438,7 +438,7 @@ static Class IDEWorkspaceWindowControllerClass;
                 (unsigned long)fileNumber,
                 commitLine];
 
-    } else {
+    } else if ( [self isBitBucketRepo:githubRepoPath] == YES ) {
 
         path = [NSString stringWithFormat:@"/commits/%@#L%ldR%@",
                 commitHash,
@@ -447,7 +447,10 @@ static Class IDEWorkspaceWindowControllerClass;
 
     }
 
-    [self openRepo:githubRepoPath withPath:path];
+    if (path != nil) {
+
+        [self openRepo:githubRepoPath withPath:path];
+    }
 }
 
 
@@ -517,7 +520,7 @@ static Class IDEWorkspaceWindowControllerClass;
                 (unsigned long)startLineNumber,
                 (unsigned long)endLineNumber];
 
-    } else {
+    } else if ( [self isBitBucketRepo:githubRepoPath] == YES ) {
 
         path = [NSString stringWithFormat:@"/src/%@/%@#L%ld-%ld",
                 commitHash,
@@ -527,19 +530,45 @@ static Class IDEWorkspaceWindowControllerClass;
 
     }
 
-    [self openRepo:githubRepoPath withPath:path];
+    if (path != nil) {
+
+        [self openRepo:githubRepoPath withPath:path];
+    }
+  
 }
 
-- (BOOL) isGithubRepo:(NSString*)repo
+- (BOOL) isGithubRepo:(NSString *)repo
 {
-    NSRange r = [[repo lowercaseString] rangeOfString:@"github.com"];
+    NSArray *servers = @[@"github.com", @"github.org"];
 
-    if (r.location == NSNotFound) {
+    for (NSString *s in servers) {
 
-        return NO;
+        NSRange r = [[repo lowercaseString] rangeOfString:s];
+
+        if (r.location != NSNotFound) {
+
+            return YES;
+        }
     }
 
-    return YES;
+    return NO;
+}
+
+- (BOOL) isBitBucketRepo:(NSString *)repo
+{
+    NSArray *servers = @[@"bitbucket.com", @"bitbucket.org"];
+
+    for (NSString *s in servers) {
+
+        NSRange r = [[repo lowercaseString] rangeOfString:s];
+
+        if (r.location != NSNotFound) {
+
+            return YES;
+        }
+    }
+
+    return NO;
 }
 
 - (void)openRepo:(NSString *)repo withPath:(NSString *)path
