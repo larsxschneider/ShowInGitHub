@@ -354,6 +354,22 @@ static Class IDEWorkspaceWindowControllerClass;
 }
 
 
+- (BOOL)isBitBucketRepo:(NSString *)repo
+{
+    NSArray *servers = @[@"bitbucket.com", @"bitbucket.org"];
+    for (NSString *server in servers)
+    {
+        NSRange rangeOfRepo = [[repo lowercaseString] rangeOfString:server];
+        if (rangeOfRepo.location != NSNotFound)
+        {
+            return YES;
+        }
+    }
+
+    return NO;
+}
+
+
 - (void)openCommitOnGitHub:(id)sender
 {
     NSUInteger lineNumber = self.selectionStartLineNumber;
@@ -537,39 +553,6 @@ static Class IDEWorkspaceWindowControllerClass;
   
 }
 
-- (BOOL) isGithubRepo:(NSString *)repo
-{
-    NSArray *servers = @[@"github.com", @"github.org"];
-
-    for (NSString *s in servers) {
-
-        NSRange r = [[repo lowercaseString] rangeOfString:s];
-
-        if (r.location != NSNotFound) {
-
-            return YES;
-        }
-    }
-
-    return NO;
-}
-
-- (BOOL) isBitBucketRepo:(NSString *)repo
-{
-    NSArray *servers = @[@"bitbucket.com", @"bitbucket.org"];
-
-    for (NSString *s in servers) {
-
-        NSRange r = [[repo lowercaseString] rangeOfString:s];
-
-        if (r.location != NSNotFound) {
-
-            return YES;
-        }
-    }
-
-    return NO;
-}
 
 - (void)openRepo:(NSString *)repo withPath:(NSString *)path
 {
