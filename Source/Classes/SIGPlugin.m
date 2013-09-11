@@ -446,27 +446,25 @@ static Class IDEWorkspaceWindowControllerClass;
 
     NSString *path = nil;
 
-    if ( [self isGithubRepo:githubRepoPath] == YES ) {
 
-        // Create GitHub URL and open browser
-        path = [NSString stringWithFormat:@"/commit/%@#L%ldR%@",
-                commitHash,
-                (unsigned long)fileNumber,
-                commitLine];
-
-    } else if ( [self isBitBucketRepo:githubRepoPath] == YES ) {
-
+    if ([self isBitBucketRepo:githubRepoPath])
+    {
         path = [NSString stringWithFormat:@"/commits/%@#L%ldR%@",
                 commitHash,
                 (unsigned long)fileNumber,
                 commitLine];
-
+    }
+    else
+    {
+        // If the repo path does not include a bitbucket server, we assume a github server. Consequently we can
+        // support GitHub enterprise instances with arbitrary server names.
+        path = [NSString stringWithFormat:@"/commit/%@#L%ldR%@",
+                commitHash,
+                (unsigned long)fileNumber,
+                commitLine];
     }
 
-    if (path != nil) {
-
-        [self openRepo:githubRepoPath withPath:path];
-    }
+    [self openRepo:githubRepoPath withPath:path];
 }
 
 
@@ -514,7 +512,7 @@ static Class IDEWorkspaceWindowControllerClass;
     {
         if ([filenameWithPath hasSuffix:activeDocumentFilename])
         {
-            filenameWithPathInCommit = filenameWithPath;
+            filenameWithPathInCommit = [filenameWithPath stringByAddingPercentEscapesUsingEncoding:NSASCIIStringEncoding];
             break;
         }
     }
@@ -527,30 +525,27 @@ static Class IDEWorkspaceWindowControllerClass;
 
     NSString *path = nil;
 
-    if ( [self isGithubRepo:githubRepoPath] == YES ) {
-
-        // Create GitHub URL and open browser
-        path = [NSString stringWithFormat:@"/blob/%@/%@#L%ld-%ld",
-                commitHash,
-                [filenameWithPathInCommit stringByAddingPercentEscapesUsingEncoding:NSASCIIStringEncoding],
-                (unsigned long)startLineNumber,
-                (unsigned long)endLineNumber];
-
-    } else if ( [self isBitBucketRepo:githubRepoPath] == YES ) {
-
+    if ([self isBitBucketRepo:githubRepoPath])
+    {
         path = [NSString stringWithFormat:@"/src/%@/%@#L%ld-%ld",
                 commitHash,
-                [filenameWithPathInCommit stringByAddingPercentEscapesUsingEncoding:NSASCIIStringEncoding],
+                filenameWithPathInCommit,
+                (unsigned long)startLineNumber,
+                (unsigned long)endLineNumber];
+    }
+    else
+    {
+        // If the repo path does not include a bitbucket server, we assume a github server. Consequently we can
+        // support GitHub enterprise instances with arbitrary server names.
+        path = [NSString stringWithFormat:@"/blob/%@/%@#L%ld-%ld",
+                commitHash,
+                filenameWithPathInCommit,
                 (unsigned long)startLineNumber,
                 (unsigned long)endLineNumber];
 
     }
 
-    if (path != nil) {
-
-        [self openRepo:githubRepoPath withPath:path];
-    }
-  
+    [self openRepo:githubRepoPath withPath:path];
 }
 
 
