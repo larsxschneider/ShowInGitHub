@@ -71,9 +71,7 @@ static Class IDEWorkspaceWindowControllerClass;
     static SIGPlugin *plugin = nil;
     
     dispatch_once(&pred, ^{
-        NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
         plugin = [[SIGPlugin alloc] init];
-        [pool drain];
     });
 }
 
@@ -108,7 +106,6 @@ static Class IDEWorkspaceWindowControllerClass;
 - (void)dealloc
 {
     [[NSNotificationCenter defaultCenter] removeObserver:self];
-    [super dealloc];
 }
 
 
@@ -122,7 +119,8 @@ static Class IDEWorkspaceWindowControllerClass;
     {
         if ([workspaceWindowController workspaceWindow] == self.ideWorkspaceWindow || windows.count == 1)
         {
-            return [[[workspaceWindowController editorArea] primaryEditorDocument] fileURL];
+            id document = [[workspaceWindowController editorArea] primaryEditorDocument];
+            return [document fileURL];
         }
     }
     
@@ -180,9 +178,8 @@ static Class IDEWorkspaceWindowControllerClass;
                                                                          keyEquivalent:@""];
         
         sixToolsMenuItem.enabled = YES;
-        sixToolsMenuItem.submenu = [[[NSMenu allocWithZone:[NSMenu menuZone]] initWithTitle:sixToolsMenuItem.title] autorelease];
+        sixToolsMenuItem.submenu = [[NSMenu allocWithZone:[NSMenu menuZone]] initWithTitle:sixToolsMenuItem.title];
         [[NSApp mainMenu] insertItem:sixToolsMenuItem atIndex:7];
-        [sixToolsMenuItem release];
     }
     
     return sixToolsMenuItem.submenu;
@@ -212,9 +209,6 @@ static Class IDEWorkspaceWindowControllerClass;
                                                                              keyEquivalent:@""];
     openFileItem.target = self;
     [sixToolsMenu addItem:openFileItem];
-    
-    [openCommitItem release];
-    [openFileItem release];
 }
 
 
@@ -248,9 +242,8 @@ static Class IDEWorkspaceWindowControllerClass;
     }
  
     NSString *output = [[NSString alloc] initWithData:[file readDataToEndOfFile] encoding:NSUTF8StringEncoding];
-    
-    [task release];
-    return [output autorelease];
+
+    return output;
 }
 
 
@@ -340,9 +333,7 @@ static Class IDEWorkspaceWindowControllerClass;
 
     NSURLResponse *response;
     NSError *error;
-    NSData* data = [NSURLConnection sendSynchronousRequest:request returningResponse:&response error:&error];
-
-    [request release];
+    NSData *data = [NSURLConnection sendSynchronousRequest:request returningResponse:&response error:&error];
 
     if (data && [response isKindOfClass:NSHTTPURLResponse.class])
     {
