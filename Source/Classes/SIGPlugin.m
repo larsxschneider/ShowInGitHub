@@ -518,11 +518,10 @@ static Class IDEWorkspaceWindowControllerClass;
 
     if ([self isBitBucketRepo:githubRepoPath])
     {
-        path = [NSString stringWithFormat:@"/src/%@/%@#L%ld-%ld",
+        path = [NSString stringWithFormat:@"/src/%@/%@#cl-%ld",
                 commitHash,
                 filenameWithPathInCommit,
-                (unsigned long)startLineNumber,
-                (unsigned long)endLineNumber];
+                (unsigned long)startLineNumber];
     }
     else
     {
