@@ -440,9 +440,22 @@ static Class IDEWorkspaceWindowControllerClass;
 
     if ([self isBitBucketRepo:githubRepoPath])
     {
-        path = [NSString stringWithFormat:@"/commits/%@#L%ldR%@",
+		NSURL *activeDocumentURL = [self activeDocument];
+		NSString *activeDocumentFilename = [activeDocumentURL lastPathComponent];
+		
+		NSString *filenameWithPathInCommit = nil;
+		for (NSString *filenameWithPath in [files componentsSeparatedByCharactersInSet:[NSCharacterSet newlineCharacterSet]])
+		{
+			if ([filenameWithPath hasSuffix:activeDocumentFilename])
+			{
+				filenameWithPathInCommit = [filenameWithPath stringByAddingPercentEscapesUsingEncoding:NSASCIIStringEncoding];
+				break;
+			}
+		}
+		
+        path = [NSString stringWithFormat:@"/commits/%@#L%@T%@",
                 commitHash,
-                (unsigned long)fileNumber,
+                filenameWithPathInCommit,
                 commitLine];
     }
     else
@@ -518,11 +531,10 @@ static Class IDEWorkspaceWindowControllerClass;
 
     if ([self isBitBucketRepo:githubRepoPath])
     {
-        path = [NSString stringWithFormat:@"/src/%@/%@#L%ld-%ld",
+        path = [NSString stringWithFormat:@"/src/%@/%@#cl-%ld",
                 commitHash,
                 filenameWithPathInCommit,
-                (unsigned long)startLineNumber,
-                (unsigned long)endLineNumber];
+                (unsigned long)startLineNumber];
     }
     else
     {
