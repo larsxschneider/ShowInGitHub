@@ -361,6 +361,37 @@ static Class IDEWorkspaceWindowControllerClass;
 }
 
 
+- (NSString *)filenameWithPathInCommit:(NSString *)commitHash forActiveDocumentURL:(NSURL *)activeDocumentURL
+{
+    NSArray *args = [NSArray arrayWithObjects:@"--no-pager", @"show", @"--name-only", @"--pretty=format:", commitHash, nil];
+    NSString *activeDocumentDirectoryPath = [[activeDocumentURL URLByDeletingLastPathComponent] path];
+    NSString *files = [self outputGitWithArguments:args inPath:activeDocumentDirectoryPath];
+    NSLog(@"GIT show: %@", files);
+
+    NSString *activeDocumentFilename = [activeDocumentURL lastPathComponent];
+
+    NSString *filenameWithPathInCommit = nil;
+    for (NSString *filenameWithPath in [files componentsSeparatedByCharactersInSet:[NSCharacterSet newlineCharacterSet]])
+    {
+        if ([filenameWithPath hasSuffix:activeDocumentFilename])
+        {
+            filenameWithPathInCommit = [filenameWithPath stringByAddingPercentEscapesUsingEncoding:NSASCIIStringEncoding];
+            break;
+        }
+    }
+
+    if (filenameWithPathInCommit)
+    {
+        return filenameWithPathInCommit;
+    }
+    else
+    {
+        NSRunAlertPanel(@"Error", @"Unable to find file in commit.", @"OK", nil, nil);
+        return nil;
+    }
+}
+
+
 - (void)openCommitOnGitHub:(id)sender
 {
     NSUInteger lineNumber = self.selectionStartLineNumber;
@@ -418,41 +449,18 @@ static Class IDEWorkspaceWindowControllerClass;
     NSString *filenameRaw = [rawLastCommitHash substringFromIndex:filenamePositionInBlame.location + filenamePositionInBlame.length + 1];
     NSString *commitFilename = [[filenameRaw componentsSeparatedByString:@"\n"] objectAtIndex:0];
     NSLog(@"Commit hash found: %@ %@ %@ ", commitHash, commitFilename, commitLine);
-    
-    
-    // Get position of the file in the commit
-    args = [NSArray arrayWithObjects:@"--no-pager", @"show", @"--name-only", @"--pretty=format:", commitHash, nil];
-    NSString *files = [self outputGitWithArguments:args inPath:activeDocumentDirectoryPath];
-    NSLog(@"GIT show: %@", files);
-    NSRange filePositionInCommit = [files rangeOfString:commitFilename];
-    
-    if (filePositionInCommit.location == NSNotFound)
-    {
-        NSRunAlertPanel(@"Error", @"Unable to find file in commit.", @"OK", nil, nil);
-        return;
-    }
-    
-    NSString *filesUntilFilename = [files substringToIndex:filePositionInCommit.location];
-    NSUInteger fileNumber = [[filesUntilFilename componentsSeparatedByCharactersInSet:[NSCharacterSet newlineCharacterSet]] count] - 2;
 
     NSString *path = nil;
 
-
     if ([self isBitBucketRepo:githubRepoPath])
     {
-		NSURL *activeDocumentURL = [self activeDocument];
-		NSString *activeDocumentFilename = [activeDocumentURL lastPathComponent];
-		
-		NSString *filenameWithPathInCommit = nil;
-		for (NSString *filenameWithPath in [files componentsSeparatedByCharactersInSet:[NSCharacterSet newlineCharacterSet]])
-		{
-			if ([filenameWithPath hasSuffix:activeDocumentFilename])
-			{
-				filenameWithPathInCommit = [filenameWithPath stringByAddingPercentEscapesUsingEncoding:NSASCIIStringEncoding];
-				break;
-			}
-		}
-		
+        NSString *filenameWithPathInCommit = [self filenameWithPathInCommit:commitHash forActiveDocumentURL:activeDocumentURL];
+
+        if (!filenameWithPathInCommit)
+        {
+            return;
+        }
+
         path = [NSString stringWithFormat:@"/commits/%@#L%@T%@",
                 commitHash,
                 filenameWithPathInCommit,
@@ -462,6 +470,23 @@ static Class IDEWorkspaceWindowControllerClass;
     {
         // If the repo path does not include a bitbucket server, we assume a github server. Consequently we can
         // support GitHub enterprise instances with arbitrary server names.
+
+        // Get position of the file in the commit
+        args = [NSArray arrayWithObjects:@"--no-pager", @"show", @"--name-only", @"--pretty=format:", commitHash, nil];
+        NSString *files = [self outputGitWithArguments:args inPath:activeDocumentDirectoryPath];
+        NSLog(@"GIT show: %@", files);
+
+        NSRange filePositionInCommit = [files rangeOfString:commitFilename];
+        
+        if (filePositionInCommit.location == NSNotFound)
+        {
+            NSRunAlertPanel(@"Error", @"Unable to find file in commit.", @"OK", nil, nil);
+            return;
+        }
+
+        NSString *filesUntilFilename = [files substringToIndex:filePositionInCommit.location];
+        NSUInteger fileNumber = [[filesUntilFilename componentsSeparatedByCharactersInSet:[NSCharacterSet newlineCharacterSet]] count] - 2;
+
         path = [NSString stringWithFormat:@"/commit/%@#L%ldR%@",
                 commitHash,
                 (unsigned long)fileNumber,
@@ -478,7 +503,6 @@ static Class IDEWorkspaceWindowControllerClass;
     NSUInteger endLineNumber = self.selectionEndLineNumber;
     
     NSURL *activeDocumentURL = [self activeDocument];
-    NSString *activeDocumentFilename = [activeDocumentURL lastPathComponent];
     NSString *activeDocumentFullPath = [activeDocumentURL path];
     NSString *activeDocumentDirectoryPath = [[activeDocumentURL URLByDeletingLastPathComponent] path];
     
@@ -505,25 +529,10 @@ static Class IDEWorkspaceWindowControllerClass;
     }
 
     NSString *commitHash = [commitHashInfo objectAtIndex:1];
-    
-    // Get file with path in the commit
-    args = [NSArray arrayWithObjects:@"--no-pager", @"show", @"--name-only", @"--pretty=format:", commitHash, nil];
-    NSString *files = [self outputGitWithArguments:args inPath:activeDocumentDirectoryPath];
-    NSLog(@"GIT show: %@", files);
-    
-    NSString *filenameWithPathInCommit = nil;
-    for (NSString *filenameWithPath in [files componentsSeparatedByCharactersInSet:[NSCharacterSet newlineCharacterSet]])
+    NSString *filenameWithPathInCommit = [self filenameWithPathInCommit:commitHash forActiveDocumentURL:activeDocumentURL];
+
+    if (!filenameWithPathInCommit)
     {
-        if ([filenameWithPath hasSuffix:activeDocumentFilename])
-        {
-            filenameWithPathInCommit = [filenameWithPath stringByAddingPercentEscapesUsingEncoding:NSASCIIStringEncoding];
-            break;
-        }
-    }
-    
-    if (filenameWithPathInCommit == nil)
-    {
-        NSRunAlertPanel(@"Error", @"Unable to find file in commit.", @"OK", nil, nil);
         return;
     }
 
@@ -573,5 +582,6 @@ static Class IDEWorkspaceWindowControllerClass;
 
     [NSTask launchedTaskWithLaunchPath:@"/usr/bin/open" arguments:[NSArray arrayWithObjects:url, nil]];
 }
+
 
 @end
