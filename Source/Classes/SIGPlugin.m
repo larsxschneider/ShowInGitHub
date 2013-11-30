@@ -29,6 +29,7 @@
 
 #import <IDEKit/IDEWorkspaceWindowController.h>
 #import <IDEKit/IDEEditorArea.h>
+#import <CommonCrypto/CommonDigest.h>
 
 id objc_getClass(const char* name);
 
@@ -125,6 +126,21 @@ static Class IDEWorkspaceWindowControllerClass;
     }
     
     return nil;
+}
+
+
++ (NSString *)md5HexDigest:(NSString *)input
+{
+    const char* str = [input UTF8String];
+    unsigned char result[CC_MD5_DIGEST_LENGTH];
+    CC_MD5(str, (CC_LONG)strlen(str), result);
+
+    NSMutableString *ret = [NSMutableString stringWithCapacity:CC_MD5_DIGEST_LENGTH*2];
+    for(int i = 0; i<CC_MD5_DIGEST_LENGTH; i++)
+    {
+        [ret appendFormat:@"%02x", result[i]];
+    }
+    return ret;
 }
 
 
@@ -369,7 +385,6 @@ static Class IDEWorkspaceWindowControllerClass;
     NSLog(@"GIT show: %@", files);
 
     NSString *activeDocumentFilename = [activeDocumentURL lastPathComponent];
-
     NSString *filenameWithPathInCommit = nil;
     for (NSString *filenameWithPath in [files componentsSeparatedByCharactersInSet:[NSCharacterSet newlineCharacterSet]])
     {
@@ -380,15 +395,13 @@ static Class IDEWorkspaceWindowControllerClass;
         }
     }
 
-    if (filenameWithPathInCommit)
-    {
-        return filenameWithPathInCommit;
-    }
-    else
+    if (!filenameWithPathInCommit)
     {
         NSRunAlertPanel(@"Error", @"Unable to find file in commit.", @"OK", nil, nil);
         return nil;
     }
+
+    return filenameWithPathInCommit;
 }
 
 
@@ -450,17 +463,15 @@ static Class IDEWorkspaceWindowControllerClass;
     NSString *commitFilename = [[filenameRaw componentsSeparatedByString:@"\n"] objectAtIndex:0];
     NSLog(@"Commit hash found: %@ %@ %@ ", commitHash, commitFilename, commitLine);
 
-    NSString *path = nil;
+    NSString *filenameWithPathInCommit = [self filenameWithPathInCommit:commitHash forActiveDocumentURL:activeDocumentURL];
+    if (!filenameWithPathInCommit)
+    {
+        return;
+    }
 
+    NSString *path = nil;
     if ([self isBitBucketRepo:githubRepoPath])
     {
-        NSString *filenameWithPathInCommit = [self filenameWithPathInCommit:commitHash forActiveDocumentURL:activeDocumentURL];
-
-        if (!filenameWithPathInCommit)
-        {
-            return;
-        }
-
         path = [NSString stringWithFormat:@"/commits/%@#L%@T%@",
                 commitHash,
                 filenameWithPathInCommit,
@@ -470,26 +481,9 @@ static Class IDEWorkspaceWindowControllerClass;
     {
         // If the repo path does not include a bitbucket server, we assume a github server. Consequently we can
         // support GitHub enterprise instances with arbitrary server names.
-
-        // Get position of the file in the commit
-        args = [NSArray arrayWithObjects:@"--no-pager", @"show", @"--name-only", @"--pretty=format:", commitHash, nil];
-        NSString *files = [self outputGitWithArguments:args inPath:activeDocumentDirectoryPath];
-        NSLog(@"GIT show: %@", files);
-
-        NSRange filePositionInCommit = [files rangeOfString:commitFilename];
-        
-        if (filePositionInCommit.location == NSNotFound)
-        {
-            NSRunAlertPanel(@"Error", @"Unable to find file in commit.", @"OK", nil, nil);
-            return;
-        }
-
-        NSString *filesUntilFilename = [files substringToIndex:filePositionInCommit.location];
-        NSUInteger fileNumber = [[filesUntilFilename componentsSeparatedByCharactersInSet:[NSCharacterSet newlineCharacterSet]] count] - 2;
-
-        path = [NSString stringWithFormat:@"/commit/%@#L%ldR%@",
+        path = [NSString stringWithFormat:@"/commit/%@#diff-%@R%@",
                 commitHash,
-                (unsigned long)fileNumber,
+                [self.class md5HexDigest:filenameWithPathInCommit],
                 commitLine];
     }
 
