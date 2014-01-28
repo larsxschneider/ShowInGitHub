@@ -1,6 +1,8 @@
 # Show in GitHub / BitBucket
 Xcode plugin to open a related Github or BitBucket page directly form the Xcode editor code window.
 
+[![tip for next commit](http://tip4commit.com/projects/367.svg)](http://tip4commit.com/projects/367)
+
 Click [here](https://www.youtube.com/watch?v=dWRjkYk8A6s) for a tutorial. In addition I presented the tool on [Git Merge 2013 in Berlin](https://www.youtube.com/watch?v=nmSFRKfFMak).
 
 
