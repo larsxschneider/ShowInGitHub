@@ -1,7 +1,5 @@
 # Show in GitHub / BitBucket
-Xcode plugin to open a related Github or BitBucket page directly form the Xcode editor code window.
-
-[![tip for next commit](http://tip4commit.com/projects/367.svg)](http://tip4commit.com/projects/367)
+Xcode plugin to open a related Github or BitBucket page directly form the Xcode editor code window. Installs easily through the Xcode package manager [Alcatraz](http://alcatraz.io/).
 
 Click [here](https://www.youtube.com/watch?v=dWRjkYk8A6s) for a tutorial. In addition I presented the tool on [Git Merge 2013 in Berlin](https://www.youtube.com/watch?v=nmSFRKfFMak).
 
@@ -15,7 +13,7 @@ Show in GitHub was developed and tested with Xcode 4.5.
 
 ## Usage
 
-0. Install it via [Alcatraz](http://mneorr.github.io/Alcatraz/)
+0. Install it via [Alcatraz](http://alcatraz.io/)
 
 or
 
@@ -37,4 +35,4 @@ Lars Schneider <larsxschneider+sig@gmail.com>
 
 ## License
 
-Show in GitHub is available under the BSD license. See the LICENSE file for more info.
+ShowInGitHub is available under the BSD license. See the LICENSE file for more info.
