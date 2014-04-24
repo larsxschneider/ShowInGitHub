@@ -264,9 +264,9 @@ static Class IDEWorkspaceWindowControllerClass;
     }
     
     NSTask *task = [[NSTask alloc] init];
-    task.launchPath = @"/usr/bin/git";
+    task.launchPath = @"/usr/bin/xcrun";
     task.currentDirectoryPath = path;
-    task.arguments = args;
+    task.arguments = [@[@"git", @"--no-pager"] arrayByAddingObjectsFromArray:args];
     task.standardOutput = [NSPipe pipe];
     NSFileHandle *file = [task.standardOutput fileHandleForReading];
     
@@ -296,7 +296,7 @@ static Class IDEWorkspaceWindowControllerClass;
 
     // Get github username and repo name
     NSString *githubURLComponent = nil;
-    NSArray *args = [NSArray arrayWithObjects:@"--no-pager", @"remote", @"-v", nil];
+    NSArray *args = [NSArray arrayWithObjects:@"remote", @"-v", nil];
     NSString *output = [self outputGitWithArguments:args inPath:dir];
     NSArray *remotes = [output componentsSeparatedByString:@"\n"];
     NSLog(@"GIT remotes: %@", remotes);
@@ -409,7 +409,7 @@ static Class IDEWorkspaceWindowControllerClass;
 
 - (NSString *)filenameWithPathInCommit:(NSString *)commitHash forActiveDocumentURL:(NSURL *)activeDocumentURL
 {
-    NSArray *args = [NSArray arrayWithObjects:@"--no-pager", @"show", @"--name-only", @"--pretty=format:", commitHash, nil];
+    NSArray *args = [NSArray arrayWithObjects:@"show", @"--name-only", @"--pretty=format:", commitHash, nil];
     NSString *activeDocumentDirectoryPath = [[activeDocumentURL URLByDeletingLastPathComponent] path];
     NSString *files = [self outputGitWithArguments:args inPath:activeDocumentDirectoryPath];
     NSLog(@"GIT show: %@", files);
@@ -457,7 +457,7 @@ static Class IDEWorkspaceWindowControllerClass;
     }
     
     // Get commit hash, original filename, original line
-    NSArray *args = [NSArray arrayWithObjects:@"--no-pager", @"blame",
+    NSArray *args = [NSArray arrayWithObjects:@"blame",
                                      [NSString stringWithFormat:@"-L%ld,%ld",
                                      (unsigned long)lineNumber, (unsigned long)lineNumber],
                                      @"-l", @"-s", @"--show-number", @"--show-name", @"--porcelain",
@@ -538,7 +538,7 @@ static Class IDEWorkspaceWindowControllerClass;
     }
     
     // Get last commit hash
-    NSArray *args = [NSArray arrayWithObjects:@"--no-pager", @"log", @"-n1", @"--no-decorate",
+    NSArray *args = [NSArray arrayWithObjects:@"log", @"-n1", @"--no-decorate",
                      activeDocumentFullPath,
                      nil];
     NSString *rawLastCommitHash = [self outputGitWithArguments:args inPath:activeDocumentDirectoryPath];
