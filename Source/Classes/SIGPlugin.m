@@ -144,6 +144,29 @@ static Class IDEWorkspaceWindowControllerClass;
 }
 
 
+- (void)createErrorReportForGitArgs:(NSArray *)gitArgs withOutput:(NSString *)gitOutput
+{
+    NSString *gitVersion = [self outputGitWithArguments:@[@"--version"] inPath:@"~"];
+    NSString *body = [NSString stringWithFormat:
+        @"!!! ATTENTION: Please redact any private information below !!!\n\n"
+         "Call:\ngit %@\n\nOutput:\n%@\n\nVersion:\n%@",
+         [gitArgs componentsJoinedByString:@" "], gitOutput, gitVersion];
+    NSString *mailString = [NSString stringWithFormat:
+        @"mailto:?to=larsxschneider+showingithub@gmail.com&subject=ShowInGithub-Error-Report&body=%@",
+        [body stringByAddingPercentEscapesUsingEncoding:NSASCIIStringEncoding]];
+    [[NSWorkspace sharedWorkspace] openURL:[NSURL URLWithString:mailString]];
+}
+
+
+- (void)showGitError:(NSString *)message gitArgs:(NSArray *)gitArgs output:(NSString *)gitOutput
+{
+    if (NSRunAlertPanel(@"Git Error", message, @"OK", @"Create error report", nil) == 0)
+    {
+        [self createErrorReportForGitArgs:gitArgs withOutput:gitOutput];
+    }
+}
+
+
 // ------------------------------------------------------------------------------------------
 #pragma mark - Notifications
 // ------------------------------------------------------------------------------------------
@@ -241,9 +264,9 @@ static Class IDEWorkspaceWindowControllerClass;
     }
     
     NSTask *task = [[NSTask alloc] init];
-    task.launchPath = @"/usr/bin/git";
+    task.launchPath = @"/usr/bin/xcrun";
     task.currentDirectoryPath = path;
-    task.arguments = args;
+    task.arguments = [@[@"git", @"--no-pager"] arrayByAddingObjectsFromArray:args];
     task.standardOutput = [NSPipe pipe];
     NSFileHandle *file = [task.standardOutput fileHandleForReading];
     
@@ -273,8 +296,9 @@ static Class IDEWorkspaceWindowControllerClass;
 
     // Get github username and repo name
     NSString *githubURLComponent = nil;
-    NSArray *args = [NSArray arrayWithObjects:@"--no-pager", @"remote", @"-v", nil];
-    NSArray *remotes = [[self outputGitWithArguments:args inPath:dir] componentsSeparatedByString:@"\n"];
+    NSArray *args = @[@"remote", @"--verbose"];
+    NSString *output = [self outputGitWithArguments:args inPath:dir];
+    NSArray *remotes = [output componentsSeparatedByString:@"\n"];
     NSLog(@"GIT remotes: %@", remotes);
 
     NSMutableSet *remotePaths = [NSMutableSet setWithCapacity:1];
@@ -338,6 +362,12 @@ static Class IDEWorkspaceWindowControllerClass;
         else if (sortedRemotePaths.count > 2) githubURLComponent = [sortedRemotePaths objectAtIndex:2];
     }
     
+    if (githubURLComponent.length == 0)
+    {
+        [self showGitError:@"Unable to find github remote URL." gitArgs:args output:output];
+        return nil;
+    }
+    
     return githubURLComponent;
 }
 
@@ -379,7 +409,7 @@ static Class IDEWorkspaceWindowControllerClass;
 
 - (NSString *)filenameWithPathInCommit:(NSString *)commitHash forActiveDocumentURL:(NSURL *)activeDocumentURL
 {
-    NSArray *args = [NSArray arrayWithObjects:@"--no-pager", @"show", @"--name-only", @"--pretty=format:", commitHash, nil];
+    NSArray *args = @[@"show", @"--name-only", @"--pretty=format:", commitHash];
     NSString *activeDocumentDirectoryPath = [[activeDocumentURL URLByDeletingLastPathComponent] path];
     NSString *files = [self outputGitWithArguments:args inPath:activeDocumentDirectoryPath];
     NSLog(@"GIT show: %@", files);
@@ -397,7 +427,7 @@ static Class IDEWorkspaceWindowControllerClass;
 
     if (!filenameWithPathInCommit)
     {
-        NSRunAlertPanel(@"Error", @"Unable to find file in commit.", @"OK", nil, nil);
+        [self showGitError:@"Unable to find file in commit." gitArgs:args output:files];
         return nil;
     }
 
@@ -421,25 +451,22 @@ static Class IDEWorkspaceWindowControllerClass;
 
     NSString *githubRepoPath = [self githubRepoPathForDirectory:activeDocumentDirectoryPath];
     
-    if (githubRepoPath.length == 0)
+    if (!githubRepoPath)
     {
-        NSRunAlertPanel(@"Error", @"Unable to find github remote URL.", @"OK", nil, nil);
         return;
     }
     
     // Get commit hash, original filename, original line
-    NSArray *args = [NSArray arrayWithObjects:@"--no-pager", @"blame",
-                                     [NSString stringWithFormat:@"-L%ld,%ld", (unsigned long)lineNumber, (unsigned long)lineNumber],
-                                     @"-l", @"-s", @"-n", @"-f", @"-p",
-                                     activeDocumentFullPath,
-                                     nil];
+    NSArray *args = @[
+            @"blame", [NSString stringWithFormat:@"-L%ld,%ld", (unsigned long)lineNumber, (unsigned long)lineNumber],
+            @"-l", @"-s", @"--show-number", @"--show-name", @"--porcelain", activeDocumentFullPath];
     NSString *rawLastCommitHash = [self outputGitWithArguments:args inPath:activeDocumentDirectoryPath];
     NSLog(@"GIT blame: %@", rawLastCommitHash);
     NSArray *commitHashInfo = [rawLastCommitHash componentsSeparatedByString:@" "];
     
     if (commitHashInfo.count < 2)
     {
-        NSRunAlertPanel(@"Error", @"Unable to find filename with git blame.", @"OK", nil, nil);
+        [self showGitError:@"Unable to find commit hash with git blame." gitArgs:args output:rawLastCommitHash];
         return;
     }
     
@@ -455,7 +482,7 @@ static Class IDEWorkspaceWindowControllerClass;
     NSRange filenamePositionInBlame = [rawLastCommitHash rangeOfString:@"\nfilename"];
     if (filenamePositionInBlame.location == NSNotFound)
     {
-        NSRunAlertPanel(@"Error", @"Unable to find filename with git blame.", @"OK", nil, nil);
+        [self showGitError:@"Unable to find filename with git blame." gitArgs:args output:rawLastCommitHash];
         return;
     }
     
@@ -502,23 +529,20 @@ static Class IDEWorkspaceWindowControllerClass;
     
     NSString *githubRepoPath = [self githubRepoPathForDirectory:activeDocumentDirectoryPath];
     
-    if (githubRepoPath.length == 0)
+    if (!githubRepoPath)
     {
-        NSRunAlertPanel(@"Error", @"Unable to find github remote URL.", @"OK", nil, nil);
         return;
     }
     
     // Get last commit hash
-    NSArray *args = [NSArray arrayWithObjects:@"--no-pager", @"log", @"-n1", @"--no-decorate",
-                     activeDocumentFullPath,
-                     nil];
+    NSArray *args = @[@"log", @"-n1", @"--no-decorate", activeDocumentFullPath];
     NSString *rawLastCommitHash = [self outputGitWithArguments:args inPath:activeDocumentDirectoryPath];
     NSLog(@"GIT log: %@", rawLastCommitHash);
     NSArray *commitHashInfo = [rawLastCommitHash componentsSeparatedByCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
     
     if (commitHashInfo.count < 2)
     {
-        NSRunAlertPanel(@"Error", @"Unable to find filename with git log.", @"OK", nil, nil);
+        [self showGitError:@"U2nable to find filename with git log." gitArgs:args output:rawLastCommitHash];
         return;
     }
 
@@ -574,7 +598,7 @@ static Class IDEWorkspaceWindowControllerClass;
         url = [NSString stringWithFormat:@"http://%@%@", repo, path];
     }
 
-    [NSTask launchedTaskWithLaunchPath:@"/usr/bin/open" arguments:[NSArray arrayWithObjects:url, nil]];
+    [NSTask launchedTaskWithLaunchPath:@"/usr/bin/open" arguments:@[url]];
 }
 
 
