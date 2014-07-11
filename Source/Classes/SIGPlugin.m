@@ -196,32 +196,32 @@ static Class IDEWorkspaceWindowControllerClass;
 }
 
 
-- (NSMenu *)sixToolsMenu
+- (NSMenu *)applicableMenu
 {
-    // Search if the 6Tools menu is already present in Xcode
-    NSMenuItem *sixToolsMenuItem = nil;
+    // Search if the 6Tools/"Source Control" menu is already present in Xcode
+    NSMenuItem *applicableMenuItem = nil;
     for (NSMenuItem *menuItem in [[NSApp mainMenu] itemArray])
     {
-        if ([menuItem.title isEqualToString:@"GitHub"])
+        if ([menuItem.title isEqualToString:@"Source Control"] || [menuItem.title isEqualToString:@"GitHub"])
         {
-            sixToolsMenuItem = menuItem;
+            applicableMenuItem = menuItem;
             break;
         }
     }
     
-    // 6Tools menu was not found, create one.
-    if (sixToolsMenuItem == nil)
+    // applicable menu was not found, create one.
+    if (applicableMenuItem == nil)
     {
-        sixToolsMenuItem = [[NSMenuItem allocWithZone:[NSMenu menuZone]] initWithTitle:@"GitHub" 
+        applicableMenuItem = [[NSMenuItem allocWithZone:[NSMenu menuZone]] initWithTitle:@"GitHub" 
                                                                                 action:NULL 
                                                                          keyEquivalent:@""];
         
-        sixToolsMenuItem.enabled = YES;
-        sixToolsMenuItem.submenu = [[NSMenu allocWithZone:[NSMenu menuZone]] initWithTitle:sixToolsMenuItem.title];
-        [[NSApp mainMenu] insertItem:sixToolsMenuItem atIndex:7];
+        applicableMenuItem.enabled = YES;
+        applicableMenuItem.submenu = [[NSMenu allocWithZone:[NSMenu menuZone]] initWithTitle:applicableMenuItem.title];
+        [[NSApp mainMenu] insertItem:applicableMenuItem atIndex:7];
     }
     
-    return sixToolsMenuItem.submenu;
+    return applicableMenuItem.submenu;
 }
 
 
@@ -234,8 +234,12 @@ static Class IDEWorkspaceWindowControllerClass;
                 object:NSApp];
 
     
-    NSMenu *sixToolsMenu = [self sixToolsMenu];
-
+    NSMenu *applicableMenu = [self applicableMenu];
+    
+    if ([applicableMenu itemArray].count) {
+        [applicableMenu addItem:[NSMenuItem separatorItem]];
+    }
+    
     // Create action menu items
     NSMenuItem *openCommitItem = [[NSMenuItem allocWithZone:[NSMenu menuZone]] initWithTitle:@"Open commit on GitHub"
                                                                                       action:@selector(openCommitOnGitHub:) 
@@ -243,7 +247,7 @@ static Class IDEWorkspaceWindowControllerClass;
     [openCommitItem setKeyEquivalentModifierMask:NSControlKeyMask];
 
     openCommitItem.target = self;
-    [sixToolsMenu addItem:openCommitItem];
+    [applicableMenu addItem:openCommitItem];
     
     NSMenuItem *openFileItem = [[NSMenuItem allocWithZone:[NSMenu menuZone]] initWithTitle:@"Open file on GitHub"
                                                                                     action:@selector(openFileOnGitHub:) 
@@ -251,7 +255,7 @@ static Class IDEWorkspaceWindowControllerClass;
     [openFileItem setKeyEquivalentModifierMask:NSControlKeyMask];
     
     openFileItem.target = self;
-    [sixToolsMenu addItem:openFileItem];
+    [applicableMenu addItem:openFileItem];
 }
 
 
