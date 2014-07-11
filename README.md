@@ -11,7 +11,7 @@ Alternatively you can select multiple lines of code and follow the same steps.
 
 [Youtube Tutorial (made under Xcode 4.x)](https://www.youtube.com/watch?v=dWRjkYk8A6s)
 
-![Screenshot](https://raw.github.com/larsxschneider/ShowInGitHub/master/open_commit_example.png)
+![Screenshot](open_commit_example.png)
 
 ## Installation
 
