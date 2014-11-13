@@ -237,15 +237,19 @@ static Class IDEWorkspaceWindowControllerClass;
     NSMenu *sixToolsMenu = [self sixToolsMenu];
 
     // Create action menu items
-    NSMenuItem* openCommitItem = [[NSMenuItem allocWithZone:[NSMenu menuZone]] initWithTitle:@"Open commit on GitHub" 
+    NSMenuItem *openCommitItem = [[NSMenuItem allocWithZone:[NSMenu menuZone]] initWithTitle:@"Open commit on GitHub"
                                                                                       action:@selector(openCommitOnGitHub:) 
-                                                                               keyEquivalent:@""];
+                                                                               keyEquivalent:@"c"];
+    [openCommitItem setKeyEquivalentModifierMask:NSControlKeyMask];
+
     openCommitItem.target = self;
     [sixToolsMenu addItem:openCommitItem];
     
-    NSMenuItem* openFileItem = [[NSMenuItem allocWithZone:[NSMenu menuZone]] initWithTitle:@"Open file on GitHub" 
+    NSMenuItem *openFileItem = [[NSMenuItem allocWithZone:[NSMenu menuZone]] initWithTitle:@"Open file on GitHub"
                                                                                     action:@selector(openFileOnGitHub:) 
-                                                                             keyEquivalent:@""];
+                                                                             keyEquivalent:@"g"];
+    [openFileItem setKeyEquivalentModifierMask:NSControlKeyMask];
+    
     openFileItem.target = self;
     [sixToolsMenu addItem:openFileItem];
 }
