@@ -23,10 +23,11 @@ or
 
 2. Build it in Xcode.
 
-3. `ShowInGitHub.xcplugin` should appear in `~/Library/Application Support/Developer/Shared/Xcode/Plug-ins`
+3. `ShowInGitHub.xcplugin` should appear in `~/Library/Application Support/Developer/Shared/Xcode/Plug-ins`.
 
-3. Restart Xcode
+3. Restart Xcode.
 
+4. Click on any line in a GitHub project and choose "GitHub" --> "Show in GitHub" in the main menu.
 
 ## Contact
 
