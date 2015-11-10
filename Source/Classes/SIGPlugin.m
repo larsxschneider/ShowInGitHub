@@ -160,7 +160,7 @@ static Class IDEWorkspaceWindowControllerClass;
 
 - (void)showGitError:(NSString *)message gitArgs:(NSArray *)gitArgs output:(NSString *)gitOutput
 {
-    if (NSRunAlertPanel(@"Git Error", message, @"OK", @"Create error report", nil) == 0)
+    if (NSRunAlertPanel(@"Git Error", @"%@", @"OK", @"Create error report", nil, message) == 0)
     {
         [self createErrorReportForGitArgs:gitArgs withOutput:gitOutput];
     }
@@ -301,7 +301,7 @@ static Class IDEWorkspaceWindowControllerClass;
     return output;
 }
 
-- (nullable NSString *)getPullRequestNumberByCommitHash:(nonnull NSString *)commitHash workingDirectoryPath:(nonnull NSString *)path
+- (nullable NSString  *)getPullRequestNumberByCommitHash:(nonnull NSString *)commitHash workingDirectoryPath:(nonnull NSString *)path
 {
     if (path.length == 0)
     {
@@ -417,10 +417,11 @@ static Class IDEWorkspaceWindowControllerClass;
         // Ask the user what remote to use.
         // Attention: Due to NSRunAlertPanel maximal three remotes are supported.
         NSInteger result = NSRunAlertPanel(@"Question",
-                        [NSString stringWithFormat:@"This repository has %li remotes configured. Which one do you want to open?", remotePaths.count],
+                        @"This repository has %li remotes configured. Which one do you want to open?",
                         [sortedRemotePaths objectAtIndex:0],
                         [sortedRemotePaths objectAtIndex:1],
-                        (sortedRemotePaths.count > 2 ? [sortedRemotePaths objectAtIndex:2] : nil));
+                        (sortedRemotePaths.count > 2 ? [sortedRemotePaths objectAtIndex:2] : nil),
+                        remotePaths.count);
 
         if (result == 1) githubURLComponent = [sortedRemotePaths objectAtIndex:0];
         else if (result == 0) githubURLComponent = [sortedRemotePaths objectAtIndex:1];
@@ -500,7 +501,7 @@ static Class IDEWorkspaceWindowControllerClass;
 }
 
 
-- (void)openCommitOnGitHub:(id)sender
+- (nullable NSDictionary *)commitHashInfoForCurrentLine
 {
     NSUInteger lineNumber = self.selectionStartLineNumber;
     NSURL *activeDocumentURL = [self activeDocument];
@@ -508,149 +509,7 @@ static Class IDEWorkspaceWindowControllerClass;
     if (!activeDocumentURL)
     {
         NSRunAlertPanel(@"Error", @"Unable to find Xcode document. Xcode version compatible to ShowInGithub?", @"OK", nil, nil);
-        return;
-    }
-
-    NSString *activeDocumentFullPath = [activeDocumentURL path];
-    NSString *activeDocumentDirectoryPath = [[activeDocumentURL URLByDeletingLastPathComponent] path];
-
-    NSString *githubRepoPath = [self githubRepoPathForDirectory:activeDocumentDirectoryPath];
-    
-    if (!githubRepoPath)
-    {
-        return;
-    }
-    
-    // Get commit hash, original filename, original line
-    NSArray *args = @[
-            @"blame", [NSString stringWithFormat:@"-L%ld,%ld", (unsigned long)lineNumber, (unsigned long)lineNumber],
-            @"-l", @"-s", @"--show-number", @"--show-name", @"--porcelain", activeDocumentFullPath];
-    NSString *rawLastCommitHash = [self outputGitWithArguments:args inPath:activeDocumentDirectoryPath];
-    NSLog(@"GIT blame: %@", rawLastCommitHash);
-    NSArray *commitHashInfo = [rawLastCommitHash componentsSeparatedByString:@" "];
-    
-    if (commitHashInfo.count < 2)
-    {
-        [self showGitError:@"Unable to find commit hash with git blame." gitArgs:args output:rawLastCommitHash];
-        return;
-    }
-    
-    NSString *commitHash = [commitHashInfo objectAtIndex:0];
-    NSString *commitLine = [commitHashInfo objectAtIndex:1];
-    
-    if ([commitHash isEqualToString:@"0000000000000000000000000000000000000000"])
-    {
-        NSRunAlertPanel(@"Error", @"Line not yet commited.", @"OK", nil, nil);
-        return;
-    }
-    
-    NSRange filenamePositionInBlame = [rawLastCommitHash rangeOfString:@"\nfilename"];
-    if (filenamePositionInBlame.location == NSNotFound)
-    {
-        [self showGitError:@"Unable to find filename with git blame." gitArgs:args output:rawLastCommitHash];
-        return;
-    }
-    
-    NSString *filenameRaw = [rawLastCommitHash substringFromIndex:filenamePositionInBlame.location + filenamePositionInBlame.length + 1];
-    NSString *commitFilename = [[filenameRaw componentsSeparatedByString:@"\n"] objectAtIndex:0];
-    NSLog(@"Commit hash found: %@ %@ %@ ", commitHash, commitFilename, commitLine);
-
-    NSString *filenameWithPathInCommit = [self filenameWithPathInCommit:commitHash forActiveDocumentURL:activeDocumentURL];
-    if (!filenameWithPathInCommit)
-    {
-        return;
-    }
-
-    NSString *path = nil;
-    if ([self isBitBucketRepo:githubRepoPath])
-    {
-        path = [NSString stringWithFormat:@"/commits/%@#L%@T%@",
-                commitHash,
-                filenameWithPathInCommit,
-                commitLine];
-    }
-    else
-    {
-        // If the repo path does not include a bitbucket server, we assume a github server. Consequently we can
-        // support GitHub enterprise instances with arbitrary server names.
-        path = [NSString stringWithFormat:@"/commit/%@#diff-%@R%@",
-                commitHash,
-                [self.class md5HexDigest:filenameWithPathInCommit],
-                commitLine];
-    }
-
-    [self openRepo:githubRepoPath withPath:path];
-}
-
-- (void)openFileOnGitHub:(id)sender
-{
-    NSUInteger startLineNumber = self.selectionStartLineNumber;
-    NSUInteger endLineNumber = self.selectionEndLineNumber;
-    
-    NSURL *activeDocumentURL = [self activeDocument];
-    NSString *activeDocumentFullPath = [activeDocumentURL path];
-    NSString *activeDocumentDirectoryPath = [[activeDocumentURL URLByDeletingLastPathComponent] path];
-    
-    NSString *githubRepoPath = [self githubRepoPathForDirectory:activeDocumentDirectoryPath];
-    
-    if (!githubRepoPath)
-    {
-        return;
-    }
-    
-    // Get last commit hash
-    NSArray *args = @[@"log", @"-n1", @"--no-decorate", activeDocumentFullPath];
-    NSString *rawLastCommitHash = [self outputGitWithArguments:args inPath:activeDocumentDirectoryPath];
-    NSLog(@"GIT log: %@", rawLastCommitHash);
-    NSArray *commitHashInfo = [rawLastCommitHash componentsSeparatedByCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
-    
-    if (commitHashInfo.count < 2)
-    {
-        [self showGitError:@"U2nable to find filename with git log." gitArgs:args output:rawLastCommitHash];
-        return;
-    }
-
-    NSString *commitHash = [commitHashInfo objectAtIndex:1];
-    NSString *filenameWithPathInCommit = [self filenameWithPathInCommit:commitHash forActiveDocumentURL:activeDocumentURL];
-
-    if (!filenameWithPathInCommit)
-    {
-        return;
-    }
-
-    NSString *path = nil;
-
-    if ([self isBitBucketRepo:githubRepoPath])
-    {
-        path = [NSString stringWithFormat:@"/src/%@/%@#cl-%ld",
-                commitHash,
-                filenameWithPathInCommit,
-                (unsigned long)startLineNumber];
-    }
-    else
-    {
-        // If the repo path does not include a bitbucket server, we assume a github server. Consequently we can
-        // support GitHub enterprise instances with arbitrary server names.
-        path = [NSString stringWithFormat:@"/blob/%@/%@#L%ld-L%ld",
-                commitHash,
-                filenameWithPathInCommit,
-                (unsigned long)startLineNumber,
-                (unsigned long)endLineNumber];
-
-    }
-
-    [self openRepo:githubRepoPath withPath:path];
-}
-
-- (void)openPullRequestOnGitHub:(id)sender
-{
-    NSUInteger lineNumber = self.selectionStartLineNumber;
-    NSURL *activeDocumentURL = [self activeDocument];
-
-    if (!activeDocumentURL)
-    {
-        NSRunAlertPanel(@"Error", @"Unable to find Xcode document. Xcode version compatible to ShowInGithub?", @"OK", nil, nil);
-        return;
+        return nil;
     }
 
     NSString *activeDocumentFullPath = [activeDocumentURL path];
@@ -660,7 +519,7 @@ static Class IDEWorkspaceWindowControllerClass;
 
     if (!githubRepoPath)
     {
-        return;
+        return nil;
     }
 
     // Get commit hash, original filename, original line
@@ -669,17 +528,109 @@ static Class IDEWorkspaceWindowControllerClass;
                       @"-l", @"-s", @"--show-number", @"--show-name", @"--porcelain", activeDocumentFullPath];
     NSString *rawLastCommitHash = [self outputGitWithArguments:args inPath:activeDocumentDirectoryPath];
     NSLog(@"GIT blame: %@", rawLastCommitHash);
-    NSArray *commitHashInfo = [rawLastCommitHash componentsSeparatedByString:@" "];
+    NSArray *results = [rawLastCommitHash componentsSeparatedByString:@" "];
 
-    if (commitHashInfo.count < 2)
+    if (results.count < 2)
     {
         [self showGitError:@"Unable to find commit hash with git blame." gitArgs:args output:rawLastCommitHash];
-        return;
+        return nil;
     }
 
-    NSString *commitHash = [commitHashInfo objectAtIndex:0];
+    NSString *commitHash = [results objectAtIndex:0];
+    NSString *commitLine = [results objectAtIndex:1];
 
-    NSString *pullRequestNumber = [self getPullRequestNumberByCommitHash:commitHash workingDirectoryPath:activeDocumentDirectoryPath];
+    if ([commitHash isEqualToString:@"0000000000000000000000000000000000000000"])
+    {
+        NSRunAlertPanel(@"Error", @"Line not yet commited.", @"OK", nil, nil);
+        return nil;
+    }
+
+    NSRange filenamePositionInBlame = [rawLastCommitHash rangeOfString:@"\nfilename"];
+    if (filenamePositionInBlame.location == NSNotFound)
+    {
+        [self showGitError:@"Unable to find filename with git blame." gitArgs:args output:rawLastCommitHash];
+        return nil;
+    }
+
+    NSString *filenameRaw = [rawLastCommitHash substringFromIndex:filenamePositionInBlame.location + filenamePositionInBlame.length + 1];
+    NSString *commitFilename = [[filenameRaw componentsSeparatedByString:@"\n"] objectAtIndex:0];
+    NSLog(@"Commit hash found: %@ %@ %@ ", commitHash, commitFilename, commitLine);
+
+    NSString *filenameWithPathInCommit = [self filenameWithPathInCommit:commitHash forActiveDocumentURL:activeDocumentURL];
+    if (!filenameWithPathInCommit)
+    {
+        return nil;
+    }
+
+    return @{@"hash": commitHash, @"line": commitLine, @"file": filenameWithPathInCommit, @"repo": githubRepoPath};
+}
+
+
+- (void)openCommitOnGitHub:(id)sender
+{
+    NSDictionary *commitHashInfo = [self commitHashInfoForCurrentLine];
+
+    NSString *path = nil;
+    if ([self isBitBucketRepo:commitHashInfo[@"repo"]])
+    {
+        path = [NSString stringWithFormat:@"/commits/%@#L%@T%@",
+                commitHashInfo[@"hash"],
+                commitHashInfo[@"file"],
+                commitHashInfo[@"line"]];
+    }
+    else
+    {
+        // If the repo path does not include a bitbucket server, we assume a github server. Consequently we can
+        // support GitHub enterprise instances with arbitrary server names.
+        path = [NSString stringWithFormat:@"/commit/%@#diff-%@R%@",
+                commitHashInfo[@"hash"],
+                [self.class md5HexDigest:commitHashInfo[@"file"]],
+                commitHashInfo[@"line"]];
+    }
+
+    [self openRepo:commitHashInfo[@"repo"] withPath:path];
+}
+
+
+- (void)openFileOnGitHub:(id)sender
+{
+    NSUInteger startLineNumber = self.selectionStartLineNumber;
+    NSUInteger endLineNumber = self.selectionEndLineNumber;
+    
+    NSDictionary *commitHashInfo = [self commitHashInfoForCurrentLine];
+
+    NSString *path = nil;
+
+    if ([self isBitBucketRepo:commitHashInfo[@"repo"]])
+    {
+        path = [NSString stringWithFormat:@"/src/%@/%@#cl-%ld",
+                commitHashInfo[@"hash"],
+                commitHashInfo[@"file"],
+                (unsigned long)startLineNumber];
+    }
+    else
+    {
+        // If the repo path does not include a bitbucket server, we assume a github server. Consequently we can
+        // support GitHub enterprise instances with arbitrary server names.
+        path = [NSString stringWithFormat:@"/blob/%@/%@#L%ld-%ld",
+                commitHashInfo[@"hash"],
+                commitHashInfo[@"file"],
+                (unsigned long)startLineNumber,
+                (unsigned long)endLineNumber];
+
+    }
+
+    [self openRepo:commitHashInfo[@"repo"] withPath:path];
+}
+
+
+- (void)openPullRequestOnGitHub:(id)sender
+{
+    NSDictionary *commitHashInfo = [self commitHashInfoForCurrentLine];
+
+    NSString *activeDocumentDirectoryPath = [[[self activeDocument] URLByDeletingLastPathComponent] path];
+
+    NSString *pullRequestNumber = [self getPullRequestNumberByCommitHash:commitHashInfo[@"hash"] workingDirectoryPath:activeDocumentDirectoryPath];
 
     if (pullRequestNumber == nil) {
         NSRunAlertPanel(@"Error", @"Merge commit not found.", @"OK", nil, nil);
@@ -687,7 +638,7 @@ static Class IDEWorkspaceWindowControllerClass;
     }
 
     NSString *path = nil;
-    if ([self isBitBucketRepo:githubRepoPath])
+    if ([self isBitBucketRepo:commitHashInfo[@"repo"]])
     {
         NSRunAlertPanel(@"Sorry", @"BitBucket repo is not yet supported.", @"OK", nil, nil);
         return;
@@ -695,8 +646,9 @@ static Class IDEWorkspaceWindowControllerClass;
         path = [NSString stringWithFormat:@"/pull/%@", pullRequestNumber];
     }
 
-    [self openRepo:githubRepoPath withPath:path];
+    [self openRepo:commitHashInfo[@"repo"] withPath:path];
 }
+
 
 - (void)openRepo:(NSString *)repo withPath:(NSString *)path
 {
