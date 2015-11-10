@@ -256,6 +256,14 @@ static Class IDEWorkspaceWindowControllerClass;
     
     openFileItem.target = self;
     [applicableMenu addItem:openFileItem];
+
+    NSMenuItem *openPullRequestItem = [[NSMenuItem allocWithZone:[NSMenu menuZone]] initWithTitle:@"Open Pull Requet on GitHub"
+                                                                                      action:@selector(openPullRequestOnGitHub:)
+                                                                               keyEquivalent:@"p"];
+    [openPullRequestItem setKeyEquivalentModifierMask:(NSControlKeyMask | NSAlternateKeyMask)];
+
+    openPullRequestItem.target = self;
+    [applicableMenu addItem:openPullRequestItem];
 }
 
 
@@ -293,6 +301,55 @@ static Class IDEWorkspaceWindowControllerClass;
     return output;
 }
 
+- (nullable NSString *)getPullRequestNumberByCommitHash:(nonnull NSString *)commitHash workingDirectoryPath:(nonnull NSString *)path
+{
+    if (path.length == 0)
+    {
+        NSLog(@"Invalid path for git working directory.");
+        return nil;
+    }
+
+    NSString *baseBranchName = @"master";
+    NSString *taskLaunchPath = @"/bin/bash";
+
+    NSTask *findMergeCommitTask = [NSTask new];
+    findMergeCommitTask.launchPath = taskLaunchPath;
+    findMergeCommitTask.currentDirectoryPath = path;
+    // cf. http://stackoverflow.com/questions/8475448/find-merge-commit-which-include-a-specific-commit
+    NSString *findMergeCommitScript = [NSString stringWithFormat:@"ruby -e 'print (File.readlines(ARGV[0]) & File.readlines(ARGV[1])).last' <(git rev-list --ancestry-path %1$@..%2$@) <(git rev-list --first-parent %1$@..%2$@) | tail -1",commitHash ,baseBranchName];
+    findMergeCommitTask.arguments = @[@"-c", findMergeCommitScript];
+    findMergeCommitTask.standardOutput = [NSPipe pipe];
+    NSFileHandle *findMergeCommitTaskOutputFile = [findMergeCommitTask.standardOutput fileHandleForReading];
+
+    [findMergeCommitTask launch];
+    NSString *mergeCommitHash = [[NSString alloc] initWithData:[findMergeCommitTaskOutputFile readDataToEndOfFile] encoding:NSUTF8StringEncoding];
+    mergeCommitHash = [mergeCommitHash stringByReplacingOccurrencesOfString:@"\n" withString:@""];
+
+    if (mergeCommitHash.length == 0) {
+        NSLog(@"Merge commit not found.");
+        return nil;
+    }
+
+    NSTask *findPullRequestNumberTask = [NSTask new];
+    findPullRequestNumberTask.launchPath = taskLaunchPath;
+    findPullRequestNumberTask.currentDirectoryPath = path;
+    NSString *findPullRequestNumberScript = [NSString stringWithFormat:@"git log -1 --format=%%B %@ | sed -e 's/^.*#\\([0-9]*\\).*$/\\1/' | head -1", mergeCommitHash];
+    findPullRequestNumberTask.arguments = @[@"-c", findPullRequestNumberScript];
+    findPullRequestNumberTask.standardOutput = [NSPipe pipe];
+    NSFileHandle *findPullRequestNumberTaskOutputFile = [findPullRequestNumberTask.standardOutput fileHandleForReading];
+
+    [findPullRequestNumberTask launch];
+    NSString *pullRequestNumber = [[NSString alloc] initWithData:[findPullRequestNumberTaskOutputFile readDataToEndOfFile] encoding:NSUTF8StringEncoding];
+
+    // validate pull request number
+    NSCharacterSet *digitCharSet = [NSCharacterSet characterSetWithCharactersInString:@"0123456789"];
+    NSScanner *scanner = [NSScanner localizedScannerWithString:pullRequestNumber];
+    NSString *result;
+    [scanner scanCharactersFromSet:digitCharSet intoString:&result];
+
+    // return nil unless digits
+    return scanner.isAtEnd ? result : nil;
+}
 
 - (NSString *)githubRepoPathForDirectory:(NSString *)dir
 {
@@ -525,7 +582,6 @@ static Class IDEWorkspaceWindowControllerClass;
     [self openRepo:githubRepoPath withPath:path];
 }
 
-
 - (void)openFileOnGitHub:(id)sender
 {
     NSUInteger startLineNumber = self.selectionStartLineNumber;
@@ -586,6 +642,61 @@ static Class IDEWorkspaceWindowControllerClass;
     [self openRepo:githubRepoPath withPath:path];
 }
 
+- (void)openPullRequestOnGitHub:(id)sender
+{
+    NSUInteger lineNumber = self.selectionStartLineNumber;
+    NSURL *activeDocumentURL = [self activeDocument];
+
+    if (!activeDocumentURL)
+    {
+        NSRunAlertPanel(@"Error", @"Unable to find Xcode document. Xcode version compatible to ShowInGithub?", @"OK", nil, nil);
+        return;
+    }
+
+    NSString *activeDocumentFullPath = [activeDocumentURL path];
+    NSString *activeDocumentDirectoryPath = [[activeDocumentURL URLByDeletingLastPathComponent] path];
+
+    NSString *githubRepoPath = [self githubRepoPathForDirectory:activeDocumentDirectoryPath];
+
+    if (!githubRepoPath)
+    {
+        return;
+    }
+
+    // Get commit hash, original filename, original line
+    NSArray *args = @[
+                      @"blame", [NSString stringWithFormat:@"-L%ld,%ld", (unsigned long)lineNumber, (unsigned long)lineNumber],
+                      @"-l", @"-s", @"--show-number", @"--show-name", @"--porcelain", activeDocumentFullPath];
+    NSString *rawLastCommitHash = [self outputGitWithArguments:args inPath:activeDocumentDirectoryPath];
+    NSLog(@"GIT blame: %@", rawLastCommitHash);
+    NSArray *commitHashInfo = [rawLastCommitHash componentsSeparatedByString:@" "];
+
+    if (commitHashInfo.count < 2)
+    {
+        [self showGitError:@"Unable to find commit hash with git blame." gitArgs:args output:rawLastCommitHash];
+        return;
+    }
+
+    NSString *commitHash = [commitHashInfo objectAtIndex:0];
+
+    NSString *pullRequestNumber = [self getPullRequestNumberByCommitHash:commitHash workingDirectoryPath:activeDocumentDirectoryPath];
+
+    if (pullRequestNumber == nil) {
+        NSRunAlertPanel(@"Error", @"Merge commit not found.", @"OK", nil, nil);
+        return;
+    }
+
+    NSString *path = nil;
+    if ([self isBitBucketRepo:githubRepoPath])
+    {
+        NSRunAlertPanel(@"Sorry", @"BitBucket repo is not yet supported.", @"OK", nil, nil);
+        return;
+    } else {
+        path = [NSString stringWithFormat:@"/pull/%@", pullRequestNumber];
+    }
+
+    [self openRepo:githubRepoPath withPath:path];
+}
 
 - (void)openRepo:(NSString *)repo withPath:(NSString *)path
 {
