@@ -1,7 +1,7 @@
 # Show in GitHub / BitBucket
 Xcode plugin to open a related Github or BitBucket page directly from the Xcode editor code window. Installs easily through the Xcode package manager [Alcatraz](http://alcatraz.io/).
 
-*Show in GitHub* has been tested with Xcode 5.1.1.
+*Show in GitHub* has been tested with Xcode 7.1.1.
 
 ## Usage
 
@@ -12,6 +12,10 @@ Click on any line in a GitHub project and choose "Source Control" (**GitHub** fo
 [Youtube Tutorial (made under Xcode 4.x)](https://www.youtube.com/watch?v=dWRjkYk8A6s)
 
 ![Screenshot](open_commit_example.png)
+
+**Open Pull Request on GitHub** opens the page of the Pull Request associated with the change of current line.
+
+![](https://i.gyazo.com/670f4cd3831d8714375058113f572f2d.gif)
 
 ## Installation
 
