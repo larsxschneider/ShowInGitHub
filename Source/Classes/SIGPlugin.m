@@ -571,7 +571,7 @@ static Class IDEWorkspaceWindowControllerClass;
     {
         // If the repo path does not include a bitbucket server, we assume a github server. Consequently we can
         // support GitHub enterprise instances with arbitrary server names.
-        path = [NSString stringWithFormat:@"/blob/%@/%@#L%ld-%ld",
+        path = [NSString stringWithFormat:@"/blob/%@/%@#L%ld-L%ld",
                 commitHash,
                 filenameWithPathInCommit,
                 (unsigned long)startLineNumber,
