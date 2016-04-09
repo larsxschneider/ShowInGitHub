@@ -406,9 +406,21 @@ static Class IDEWorkspaceWindowControllerClass;
             return YES;
         }
     }
-
+    
     return NO;
 }
+
+- (BOOL)isGitlabRepo:(NSString *)repo
+{
+    NSRange rangeOfRepo = [[repo lowercaseString] rangeOfString:@"gitlab"];
+    if (rangeOfRepo.location != NSNotFound)
+    {
+        return YES;
+    }
+    
+    return NO;
+}
+
 
 
 - (NSString *)filenameWithPathInCommit:(NSString *)commitHash forActiveDocumentURL:(NSURL *)activeDocumentURL
@@ -566,6 +578,15 @@ static Class IDEWorkspaceWindowControllerClass;
                 commitHash,
                 filenameWithPathInCommit,
                 (unsigned long)startLineNumber];
+    }
+    else if ([self isGitlabRepo:githubRepoPath])
+    {
+        // Gitlab has slighly different format for the end line number (no L)
+        path = [NSString stringWithFormat:@"/blob/%@/%@#L%ld-%ld",
+                commitHash,
+                filenameWithPathInCommit,
+                (unsigned long)startLineNumber,
+                (unsigned long)endLineNumber];
     }
     else
     {
