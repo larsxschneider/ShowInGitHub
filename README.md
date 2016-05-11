@@ -13,6 +13,10 @@ Click on any line in a GitHub project and choose "Source Control" (**GitHub** fo
 
 ![Screenshot](open_commit_example.png)
 
+**Open Pull Request on GitHub** opens the page of the Pull Request associated with the change of current line.
+
+![Screenshot](open_pr_example.gif)
+
 ## Installation
 
 0. Install it via [Alcatraz](http://alcatraz.io/)
@@ -23,9 +27,9 @@ or
 
 2. Build it in Xcode.
 
-3. `ShowInGitHub.xcplugin` should appear in `~/Library/Application Support/Developer/Shared/Xcode/Plug-ins`
+3. `ShowInGitHub.xcplugin` should appear in `~/Library/Application Support/Developer/Shared/Xcode/Plug-ins`.
 
-3. Restart Xcode
+4. Restart Xcode.
 
 
 ## Contact
